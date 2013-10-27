@@ -14,11 +14,13 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        maindialog.cpp
+        maindialog.cpp \
+    mksfoldertemplate.cpp
 
-HEADERS  += maindialog.h
+HEADERS  += maindialog.h \
+    mksfoldertemplate.h
 
 FORMS    += maindialog.ui \
-    MKSFolderTemplate.ui
+    mksfoldertemplate.ui
 
 RESOURCES +=

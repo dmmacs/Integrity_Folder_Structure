@@ -1,6 +1,7 @@
 #include "maindialog.h"
 #include "ui_maindialog.h"
 
+#include "mksfoldertemplate.h"
 
 const QString DirTagName = "dir";
 const QString DirAttrName = "name";
@@ -134,6 +135,8 @@ void MainDialog::on_pBSave_clicked()
 
 void MainDialog::on_pB_ReadDirStruct_clicked()
 {
-    ui->setupUi(this);
+    mksfoldertemplate dlg;
 
+    dlg.exec();
+    //mksfoldertemplate();
 }

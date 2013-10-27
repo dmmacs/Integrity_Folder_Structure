@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Dialog</class>
- <widget class="QDialog" name="Dialog">
+ <class>mksfoldertemplate</class>
+ <widget class="QDialog" name="mksfoldertemplate">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>480</width>
-    <height>748</height>
+    <width>455</width>
+    <height>727</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,9 +16,32 @@
   <widget class="QPushButton" name="pushButton">
    <property name="geometry">
     <rect>
-     <x>434</x>
+     <x>190</x>
+     <y>690</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>PushButton</string>
+   </property>
+  </widget>
+  <widget class="QTextEdit" name="m_dirPath">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
      <y>10</y>
-     <width>31</width>
+     <width>381</width>
+     <height>31</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton_2">
+   <property name="geometry">
+    <rect>
+     <x>400</x>
+     <y>10</y>
+     <width>41</width>
      <height>23</height>
     </rect>
    </property>
@@ -26,23 +49,13 @@
     <string>...</string>
    </property>
   </widget>
-  <widget class="QTextEdit" name="textEdit">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>421</width>
-     <height>31</height>
-    </rect>
-   </property>
-  </widget>
   <widget class="QTreeView" name="treeView">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>50</y>
-     <width>451</width>
-     <height>651</height>
+     <width>431</width>
+     <height>631</height>
     </rect>
    </property>
   </widget>
