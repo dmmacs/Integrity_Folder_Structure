@@ -40,6 +40,9 @@ private:
     void ParseXMLFile(QString sPath, QDomDocument *xmlDoc);
     void SaveXMLFile(QString sPath, QDomDocument *xmlDoc);
     void ProcessXMLData(QDomElement *rootxml, QStandardItem *rootNode, QString tabStr);
+    void ReadDir(QString Path, QString *nodeData);
+    void LoadXMLData(QString sFname);
+
 };
 
 #endif // MAINDIALOG_H

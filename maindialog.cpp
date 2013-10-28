@@ -6,6 +6,8 @@
 const QString DirTagName = "dir";
 const QString DirAttrName = "name";
 
+const QString XMLHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>";
+
 MainDialog::MainDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MainDialog)
 {
     ui->setupUi(this);
@@ -27,6 +29,11 @@ void MainDialog::on_pB_BrowseButton_clicked()
 
     qDebug() << sFname;
     ui->textEdit->setText(sFname);
+
+    if (sFname != "")
+    {
+        LoadXMLData(sFname);
+    }
 
 }
 
@@ -95,32 +102,37 @@ void MainDialog::ProcessXMLData(QDomElement *rootxml, QStandardItem *rootNode, Q
 
 }
 
+void MainDialog::LoadXMLData(QString sFname)
+{
+    // Clear the Tree
+    StdModel->clear();
+
+    ParseXMLFile(sFname, &xmldoc);
+
+    // Get Root of Tree and XML
+    QStandardItem *Node = StdModel->invisibleRootItem();
+    QDomElement root = xmldoc.firstChildElement(DirTagName);
+
+    // Add the Root node
+    qDebug() << root.attribute(DirAttrName);
+
+    // Add the node
+    QStandardItem *tmpNode;
+    tmpNode = new QStandardItem(root.attribute(DirAttrName));
+    Node->appendRow(tmpNode);
+
+    root = root.firstChildElement(DirTagName);
+
+    ProcessXMLData(&root, tmpNode, "  ");
+    ui->treeView->expandAll();
+
+}
+
 void MainDialog::on_pBLoad_clicked()
 {
     if (ui->textEdit->toPlainText() != "")
     {
-        // Clear the Tree
-        StdModel->clear();
-
-        ParseXMLFile("C:/Users/dmmacs/Documents/Qt Projects/QFileSystemModel/tmp.xml", &xmldoc);
-
-        // Get Root of Tree and XML
-        QStandardItem *Node = StdModel->invisibleRootItem();
-        QDomElement root = xmldoc.firstChildElement(DirTagName);
-
-        // Add the Root node
-        qDebug() << root.attribute(DirAttrName);
-
-        // Add the node
-        QStandardItem *tmpNode;
-        tmpNode = new QStandardItem(root.attribute(DirAttrName));
-        Node->appendRow(tmpNode);
-
-        root = root.firstChildElement(DirTagName);
-
-        ProcessXMLData(&root, tmpNode, "  ");
-        ui->treeView->expandAll();
-
+        LoadXMLData(ui->textEdit->toPlainText());
     }
 
 }
@@ -131,12 +143,87 @@ void MainDialog::on_pBSave_clicked()
     {
         SaveXMLFile(ui->textEdit->toPlainText(), &xmldoc);
     }
+    else
+    {
+        QString sfname = QFileDialog::getSaveFileName(this, tr("Enter FileName"),directory.path());
+        ui->textEdit->setText(sfname);
+        SaveXMLFile(ui->textEdit->toPlainText(), &xmldoc);
+    }
 }
 
 void MainDialog::on_pB_ReadDirStruct_clicked()
 {
-    mksfoldertemplate dlg;
+//    QString sFname = QFileDialog::getOpenFileName(this,tr("Open File"),directory.path(),tr("Files(*.*)"));
+#if 1
+    directory.setPath("C:/Users/dmmacs/Documents/Qt Projects/tmp_root");
+#endif
+    QString sPath = QFileDialog::getExistingDirectory(this,tr("Select Directory"),directory.path());
 
-    dlg.exec();
-    //mksfoldertemplate();
+    if (sPath != "")
+    {
+        StdModel->clear();
+        xmldoc.clear();
+
+        directory.setPath(sPath);
+        QDir tmp;
+        tmp.setPath(sPath);
+        QString relPath = tmp.relativeFilePath(sPath);
+
+        //xmldoc.appendChild()
+        QString nodeName;
+        nodeName = XMLHeader + "\n";
+
+        nodeName += "<" + DirTagName + " " + DirAttrName + "=\"" + directory.dirName() + "\" >" + "\n";
+//        qDebug() << sPath << relPath;
+//        qDebug() << nodeName;
+
+        ReadDir(sPath, &nodeName);
+        nodeName += "</" + DirTagName + ">" + "\n";
+        qDebug() << nodeName;
+
+        QTemporaryFile file("tempXML",this);
+        file.setAutoRemove(false);
+
+        file.open();//QIODevice::WriteOnly | QIODevice::Text);
+        qDebug() << file.fileName();
+
+
+        // Store the xml data in a temporary file
+        QTextStream tmpStream(&file);
+        tmpStream << nodeName;
+        file.close();
+
+        LoadXMLData(file.fileName());
+
+        file.remove();
+
+    }
+
+
+}
+
+void MainDialog::ReadDir(QString Path, QString *nodeData)
+{
+    QDir dir(Path);
+
+    QFileInfoList dirs = dir.entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot);
+
+    foreach(const QFileInfo &fi, dirs)
+    {      //Loops through the found files.
+        QString sPath = fi.absoluteFilePath();  //Gets the absolute file path
+        if (fi.isDir())
+        {
+            QDir tmp;
+            tmp.setPath(Path);
+            QString relPath = tmp.relativeFilePath(sPath);
+            *nodeData += "<" + DirTagName + " " + DirAttrName + "=\"" + relPath + "\" >" + "\n";
+//            qDebug() << sPath << relPath;
+//            qDebug() << *nodeData;
+            ReadDir(sPath, nodeData);
+            *nodeData += "</" + DirTagName + ">" + "\n";
+//            qDebug() << *nodeData;
+
+        }
+    }
+
 }

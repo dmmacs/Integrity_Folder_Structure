@@ -30,7 +30,6 @@ private:
     Ui::mksfoldertemplate *ui;
 
     QFileSystemModel *dirmodel;
-
 };
 
 #endif // MKSFOLDERTEMPLATE_H
