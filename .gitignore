@@ -11,6 +11,8 @@ tmp/
 *.bak
 *.swp
 *~.nib
+*.pro
+*.autosave
 local.properties
 .classpath
 .settings/

@@ -16,6 +16,7 @@ MainDialog::MainDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MainDialog
 
     ui->treeView->setModel(StdModel);
     ui->treeView->expandAll();
+    ui->progressBar->setValue(0;);
 }
 
 MainDialog::~MainDialog()
