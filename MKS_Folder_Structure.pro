@@ -15,12 +15,11 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         maindialog.cpp \
-    mksfoldertemplate.cpp
+    mylineeditclass.cpp
 
 HEADERS  += maindialog.h \
-    mksfoldertemplate.h
+    mylineeditclass.h
 
-FORMS    += maindialog.ui \
-    mksfoldertemplate.ui
+FORMS    += maindialog.ui
 
 RESOURCES +=

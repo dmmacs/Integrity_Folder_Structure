@@ -9,10 +9,14 @@
 #include <QtXml/QDomDocument>
 #include <QtXml/QDomElement>
 #include <QFileDialog>
+#include <QLineEdit>
+#include <QInputDialog>
 
 namespace Ui {
 class MainDialog;
 }
+
+
 
 class MainDialog : public QDialog
 {
@@ -23,13 +27,20 @@ public:
     ~MainDialog();
 
 private slots:
-    void on_pB_BrowseButton_clicked();
-
     void on_pBLoad_clicked();
 
     void on_pBSave_clicked();
 
     void on_pB_ReadDirStruct_clicked();
+
+    void on_lineEdit_selectionChanged();
+
+    void on_lineEdit_textChanged(const QString &arg1);
+
+    void on_toolButton_clicked();
+
+
+    void on_m_pMKSGenButton_clicked();
 
 private:
     Ui::MainDialog *ui;
@@ -43,6 +54,12 @@ private:
     void ReadDir(QString Path, QString *nodeData);
     void LoadXMLData(QString sFname);
 
+
+    bool matchProcessName(DWORD processID, std::string processName);
+
 };
+
+
+
 
 #endif // MAINDIALOG_H

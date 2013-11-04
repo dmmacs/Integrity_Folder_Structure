@@ -2,9 +2,18 @@
 #include "ui_maindialog.h"
 
 #include "mksfoldertemplate.h"
+#include "windows.h"
+
 
 const QString DirTagName = "dir";
 const QString DirAttrName = "name";
+#ifdef QT_DEBUG
+const QString DefaultPrjName = "/PSE/AECU/CoreDev/platform";
+#else
+const QString DefaultPrjName = "i.e. /PSE/AECU/CoreDev/platform";
+#endif
+const QString MKShost = "--hostname=skobde-mks.kobde.trw.com";
+const QString MKSport = "--port=7001";
 
 const QString XMLHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>";
 
@@ -16,27 +25,21 @@ MainDialog::MainDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MainDialog
 
     ui->treeView->setModel(StdModel);
     ui->treeView->expandAll();
+    ui->treeView->setHeaderHidden(true);
+
     ui->progressBar->setValue(0);
     ui->progressBar->setVisible(false);
+
+    ui->textEdit->setText("");
+    ui->lineEdit->setStyleSheet("color: grey;");
+    ui->lineEdit->setText(DefaultPrjName);
+    ui->lineEdit->selectAll();
+
 }
 
 MainDialog::~MainDialog()
 {
     delete ui;
-}
-
-void MainDialog::on_pB_BrowseButton_clicked()
-{
-    QString sFname = QFileDialog::getOpenFileName(this,tr("Open File"),directory.path(),tr("Files(*.*)"));
-
-    qDebug() << sFname;
-    ui->textEdit->setText(sFname);
-
-    if (sFname != "")
-    {
-        LoadXMLData(sFname);
-    }
-
 }
 
 void MainDialog::ParseXMLFile(QString sPath, QDomDocument *xmlDoc)
@@ -132,24 +135,24 @@ void MainDialog::LoadXMLData(QString sFname)
 
 void MainDialog::on_pBLoad_clicked()
 {
-    if (ui->textEdit->toPlainText() != "")
+    if (ui->lineEdit->text() != "")
     {
-        LoadXMLData(ui->textEdit->toPlainText());
+        LoadXMLData(ui->lineEdit->text());
     }
 
 }
 
 void MainDialog::on_pBSave_clicked()
 {
-    if (ui->textEdit->toPlainText() != "")
+    if (ui->lineEdit->text() != "")
     {
-        SaveXMLFile(ui->textEdit->toPlainText(), &xmldoc);
+        SaveXMLFile(ui->lineEdit->text(), &xmldoc);
     }
     else
     {
         QString sfname = QFileDialog::getSaveFileName(this, tr("Enter FileName"),directory.path());
         ui->textEdit->setText(sfname);
-        SaveXMLFile(ui->textEdit->toPlainText(), &xmldoc);
+        SaveXMLFile(ui->lineEdit->text(), &xmldoc);
     }
 }
 
@@ -171,13 +174,10 @@ void MainDialog::on_pB_ReadDirStruct_clicked()
         tmp.setPath(sPath);
         QString relPath = tmp.relativeFilePath(sPath);
 
-        //xmldoc.appendChild()
         QString nodeName;
         nodeName = XMLHeader + "\n";
 
         nodeName += "<" + DirTagName + " " + DirAttrName + "=\"" + directory.dirName() + "\" >" + "\n";
-//        qDebug() << sPath << relPath;
-//        qDebug() << nodeName;
 
         ReadDir(sPath, &nodeName);
         nodeName += "</" + DirTagName + ">" + "\n";
@@ -219,13 +219,134 @@ void MainDialog::ReadDir(QString Path, QString *nodeData)
             tmp.setPath(Path);
             QString relPath = tmp.relativeFilePath(sPath);
             *nodeData += "<" + DirTagName + " " + DirAttrName + "=\"" + relPath + "\" >" + "\n";
-//            qDebug() << sPath << relPath;
-//            qDebug() << *nodeData;
             ReadDir(sPath, nodeData);
             *nodeData += "</" + DirTagName + ">" + "\n";
-//            qDebug() << *nodeData;
 
         }
     }
 
+}
+
+void MainDialog::on_lineEdit_selectionChanged()
+{
+    if (ui->lineEdit->text() == "")
+    {
+
+        ui->lineEdit->setStyleSheet("color: black;");
+    }
+}
+
+void MainDialog::on_lineEdit_textChanged(const QString &arg1)
+{
+    if (arg1 == DefaultPrjName)
+    {
+        ui->lineEdit->setStyleSheet("color: grey;");
+    }
+    else
+    {
+        ui->lineEdit->setStyleSheet("color: black;");
+    }
+
+}
+
+void MainDialog::on_toolButton_clicked()
+{
+    QString sFname = QFileDialog::getOpenFileName(this,tr("Open File"),directory.path(),tr("Files(*.*)"));
+
+    qDebug() << sFname;
+    ui->textEdit->setText(sFname);
+
+    if (sFname != "")
+    {
+        LoadXMLData(sFname);
+    }
+
+}
+
+
+// Create the sturture in MKS
+// 1. Verify MKS Login
+// 2. Verify structure is not empty
+// 3. Verify base project exists.
+// 4. Create the structure
+void MainDialog::on_m_pMKSGenButton_clicked()
+{
+    QString cmd;
+
+#ifdef QT_DEBUG
+    cmd = "si projectinfo " + MKShost + " " + MKSport + " --project=" + "/PSE" + "/project.pj";
+#else
+    cmd = "si projectinfo " + MKShost + " " + MKSport + " --project=" + ui->lineEdit->text() + "/project.pj";
+#endif
+
+    qDebug() << cmd;
+
+
+    QProcess bat;
+    bat.start(cmd);
+    bat.waitForFinished();
+        QInputDialog input;
+        qDebug() << bat.readAllStandardOutput();
+        qDebug() << bat.readAllStandardError();
+    return;
+    bat.waitForFinished();
+
+//    bat.waitForReadyRead(5000);
+
+    QProcess process;
+
+    process.start(cmd);
+    process.waitForFinished(10000);
+    QString p_stdout = process.readAllStandardOutput();
+    QString p_stderr = process.readAllStandardError();
+
+    if (p_stderr == "") //("Revision"))
+    {
+        qDebug() << "No errors, " << p_stdout;
+    }
+    else
+    {
+        qDebug() << "Errors, " << p_stderr;
+    }
+
+
+
+}
+#include <psapi.h>
+#include <tchar.h>
+bool MainDialog::matchProcessName( DWORD processID, std::string processName)
+{
+    TCHAR szProcessName[MAX_PATH] = TEXT("<unknown>");
+
+    // Get a handle to the process.
+
+    HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION |
+                                   PROCESS_VM_READ,
+                                   FALSE, processID );
+
+    // Get the process name.
+
+    if (NULL != hProcess )
+    {
+        HMODULE hMod;
+        DWORD cbNeeded;
+
+        if ( EnumProcessModules( hProcess, &hMod, sizeof(hMod),
+             &cbNeeded) )
+        {
+            GetModuleBaseName( hProcess, hMod, szProcessName,
+                               sizeof(szProcessName)/sizeof(TCHAR) );
+        }
+    }
+
+    // Compare process name with your string
+    QString tmp1, tmp2;
+    tmp1 = wcstombs(szProcessName);
+    tmp2 = processName.c_str();
+    bool matchFound = !_tcscmp(szProcessName, processName.c_str() );
+
+    // Release the handle to the process.
+    CloseHandle( hProcess );
+
+    return matchFound;
 }
