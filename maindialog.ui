@@ -79,7 +79,7 @@
    <property name="geometry">
     <rect>
      <x>450</x>
-     <y>60</y>
+     <y>230</y>
      <width>221</width>
      <height>22</height>
     </rect>
@@ -102,7 +102,7 @@
    <property name="geometry">
     <rect>
      <x>450</x>
-     <y>40</y>
+     <y>210</y>
      <width>221</width>
      <height>16</height>
     </rect>
@@ -115,7 +115,7 @@
    <property name="geometry">
     <rect>
      <x>460</x>
-     <y>100</y>
+     <y>270</y>
      <width>93</width>
      <height>28</height>
     </rect>
@@ -140,6 +140,84 @@
    </property>
    <property name="text">
     <string>...</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>450</x>
+     <y>40</y>
+     <width>221</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>MKS Server</string>
+   </property>
+  </widget>
+  <widget class="MyLineEditClass" name="mks_serveredit">
+   <property name="geometry">
+    <rect>
+     <x>450</x>
+     <y>60</y>
+     <width>221</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>450</x>
+     <y>90</y>
+     <width>221</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>MKS Port</string>
+   </property>
+  </widget>
+  <widget class="MyLineEditClass" name="mks_portedit">
+   <property name="geometry">
+    <rect>
+     <x>450</x>
+     <y>110</y>
+     <width>221</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_4">
+   <property name="geometry">
+    <rect>
+     <x>450</x>
+     <y>140</y>
+     <width>221</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Change Package</string>
+   </property>
+  </widget>
+  <widget class="MyLineEditClass" name="changePackageEdit">
+   <property name="geometry">
+    <rect>
+     <x>450</x>
+     <y>160</y>
+     <width>221</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
    </property>
   </widget>
  </widget>

@@ -8,12 +8,16 @@
 const QString DirTagName = "dir";
 const QString DirAttrName = "name";
 #ifdef QT_DEBUG
-const QString DefaultPrjName = "/PSE/AECU/CoreDev/platform";
+const QString DefaultPrjName = "/PSE/CoreDev/platform";
 #else
 const QString DefaultPrjName = "i.e. /PSE/AECU/CoreDev/platform";
 #endif
 const QString MKShost = "--hostname=skobde-mks.kobde.trw.com";
 const QString MKSport = "--port=7001";
+
+const QString DefMKSPort = "7001";
+const QString DefMKSHost = "skobde-mks.kobde.trw.com";
+
 
 const QString XMLHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>";
 
@@ -34,6 +38,18 @@ MainDialog::MainDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MainDialog
     ui->lineEdit->setStyleSheet("color: grey;");
     ui->lineEdit->setText(DefaultPrjName);
     ui->lineEdit->selectAll();
+
+#ifdef QT_DEBUG
+    ui->mks_portedit->setText("7001");
+    ui->mks_serveredit->setText("skobde-mkstest.kobde.trw.com");
+
+    LoadXMLData("C:/Users/mcdonaldd/Documents/Qt/Projects/tmp.xml");
+
+
+#else
+    ui->mks_portedit->setText(DefMKSPort);
+    ui->mks_serveredit->setText(DefMKSHost);
+#endif
 
 }
 
@@ -91,7 +107,7 @@ void MainDialog::ProcessXMLData(QDomElement *rootxml, QStandardItem *rootNode, Q
     nextItem = *rootxml;
     while (nextItem.isNull() == FALSE)
     {
-        qDebug() << tabStr << nextItem.attribute(DirAttrName);
+//        qDebug() << tabStr << nextItem.attribute(DirAttrName);
         tmpNode = new QStandardItem(nextItem.attribute(DirAttrName));
         rootNode->appendRow(tmpNode);
 
@@ -119,7 +135,7 @@ void MainDialog::LoadXMLData(QString sFname)
     QDomElement root = xmldoc.firstChildElement(DirTagName);
 
     // Add the Root node
-    qDebug() << root.attribute(DirAttrName);
+//    qDebug() << root.attribute(DirAttrName);
 
     // Add the node
     QStandardItem *tmpNode;
@@ -272,81 +288,152 @@ void MainDialog::on_toolButton_clicked()
 void MainDialog::on_m_pMKSGenButton_clicked()
 {
     QString cmd;
+    int i;
 
-#ifdef QT_DEBUG
-    cmd = "si projectinfo " + MKShost + " " + MKSport + " --project=" + "/PSE" + "/project.pj";
-#else
-    cmd = "si projectinfo " + MKShost + " " + MKSport + " --project=" + ui->lineEdit->text() + "/project.pj";
-#endif
+    QProcess cmdProc;
+    cmdProc.start("tasklist");
+    if(!cmdProc.waitForFinished())
+    {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Could not get Tasklist");
+        msgBox.setText("Could not get Tasklist, not sure why since this is standard command line operation. \n\rNeed admin rights?");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.exec();
+        return;
+    }
+
+    QString tasks;
+    QStringList taskList;
+    tasks = cmdProc.readAllStandardOutput();
+    tasks = tasks.trimmed();
+    QRegExp regExp("[\r\n]");
+    taskList = tasks.split(regExp, QString::SkipEmptyParts);
+
+    for (i = 0; i < taskList.count(); i++)
+    {
+        QString item = taskList.at(i);
+        if (item.contains("IntegrityClient.exe"))
+        {
+            // Found the Client running, break the loop
+            qDebug() << item;
+            break;
+        }
+    }
+    if (i == taskList.count())
+    {
+        // Couldn't find the process in the list
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("MKS Integrity not running");
+        msgBox.setText("Could not find MKS Integrity running, please start and login into MKS Integrity and rerun the program");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.exec();
+        return;
+    }
+
+    // MKS Integrity is running, start building commandlines and run
+
+    // Verify the root project exists
+    cmd = "si projectinfo --hostname=" + ui->mks_serveredit->text() + " --port=" + ui->mks_portedit->text() + " --project=" + \
+            ui->lineEdit->text() + "/project.pj";
+
 
     qDebug() << cmd;
 
-
-    QProcess bat;
-    bat.start(cmd);
-    bat.waitForFinished();
-        QInputDialog input;
-        qDebug() << bat.readAllStandardOutput();
-        qDebug() << bat.readAllStandardError();
-    return;
-    bat.waitForFinished();
-
-//    bat.waitForReadyRead(5000);
-
-    QProcess process;
-
-    process.start(cmd);
-    process.waitForFinished(10000);
-    QString p_stdout = process.readAllStandardOutput();
-    QString p_stderr = process.readAllStandardError();
-
-    if (p_stderr == "") //("Revision"))
+    cmdProc.start(cmd);
+    if (!cmdProc.waitForFinished())
     {
-        qDebug() << "No errors, " << p_stdout;
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("MKS Integrity not running");
+        msgBox.setText("Could not run command lines for MKS integrity.");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.exec();
+        return;
+    }
+    QString stdOut, stdErr;
+    stdOut = cmdProc.readAllStandardOutput();
+    stdErr = cmdProc.readAllStandardError();
+    if (stdOut != "")
+    {
+        qDebug() << "stdOut = " << stdOut;
     }
     else
     {
-        qDebug() << "Errors, " << p_stderr;
+        qDebug() << "stdErr = " << stdErr;
     }
 
+    // Root Project exists, Check if new structure top-level already exists.
+    QStandardItem *tmpNode;
+    QString nodeText;
+    tmpNode = StdModel->invisibleRootItem();
+    tmpNode = tmpNode->child(0);
+    nodeText = tmpNode->text();
+    cmd = "si projectinfo --hostname=" + ui->mks_serveredit->text() + " --port=" + ui->mks_portedit->text() + " --project=" + \
+            ui->lineEdit->text() + "/" + tmpNode->text() + "/project.pj";
+    qDebug() << cmd;
 
+    cmdProc.start(cmd);
+    if (!cmdProc.waitForFinished())
+    {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("MKS Integrity not running");
+        msgBox.setText("Could not run command lines for MKS integrity.");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.exec();
+        return;
+    }
+
+    stdOut = cmdProc.readAllStandardOutput();
+    stdErr = cmdProc.readAllStandardError();
+    if (stdOut != "")
+    {
+        qDebug() << "stdOut = " << stdOut;
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Root Project already exists");
+        msgBox.setText("Could not run command lines for MKS integrity.");
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        msgBox.setDefaultButton(QMessageBox::No);
+        msgBox.setIcon(QMessageBox::Question);
+        if (msgBox.exec() == QMessageBox::No)
+        {
+            return;
+        }
+
+    }
+    // Project does not exist, so start creating it.
+    qDebug() << "stdErr = " << stdErr;
+//    tmpNode = StdModel->invisibleRootItem();
+//    nodeText = tmpNode->text();
+    CreateMKSProjects(nodeText, tmpNode);
 
 }
-#include <psapi.h>
-#include <tchar.h>
-bool MainDialog::matchProcessName( DWORD processID, std::string processName)
+
+void MainDialog::CreateMKSProjects(QString root, QStandardItem *rootItem)
 {
-    TCHAR szProcessName[MAX_PATH] = TEXT("<unknown>");
+    int i;
+    QStandardItem *tmpItem;
+    tmpItem = rootItem;
+    qDebug () << tmpItem->text();
 
-    // Get a handle to the process.
-
-    HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION |
-                                   PROCESS_VM_READ,
-                                   FALSE, processID );
-
-    // Get the process name.
-
-    if (NULL != hProcess )
+    for (i = 0; i < rootItem->rowCount(); i++)
     {
-        HMODULE hMod;
-        DWORD cbNeeded;
-
-        if ( EnumProcessModules( hProcess, &hMod, sizeof(hMod),
-             &cbNeeded) )
+        tmpItem = rootItem->child(i);
+        if (tmpItem->hasChildren())
         {
-            GetModuleBaseName( hProcess, hMod, szProcessName,
-                               sizeof(szProcessName)/sizeof(TCHAR) );
+            QStandardItem *childItem;
+            childItem = tmpItem->child(0);
+            CreateMKSProjects(tmpItem->text(), tmpItem);
+        }
+        else
+        {
+            qDebug() << tmpItem->text();
         }
     }
-
-    // Compare process name with your string
-    QString tmp1, tmp2;
-    tmp1 = wcstombs(szProcessName);
-    tmp2 = processName.c_str();
-    bool matchFound = !_tcscmp(szProcessName, processName.c_str() );
-
-    // Release the handle to the process.
-    CloseHandle( hProcess );
-
-    return matchFound;
 }

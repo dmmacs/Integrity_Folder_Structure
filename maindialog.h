@@ -11,6 +11,7 @@
 #include <QFileDialog>
 #include <QLineEdit>
 #include <QInputDialog>
+#include <QMessageBox>
 
 namespace Ui {
 class MainDialog;
@@ -54,8 +55,7 @@ private:
     void ReadDir(QString Path, QString *nodeData);
     void LoadXMLData(QString sFname);
 
-
-    bool matchProcessName(DWORD processID, std::string processName);
+    void CreateMKSProjects(QString root, QStandardItem *rootItem);
 
 };
 
