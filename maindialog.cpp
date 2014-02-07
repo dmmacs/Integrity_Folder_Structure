@@ -9,8 +9,10 @@ const QString DirTagName = "dir";
 const QString DirAttrName = "name";
 #ifdef QT_DEBUG
 const QString DefaultPrjName = "/PSE/CoreDev/platform";
+const QString DefaultCP = "none";
 #else
 const QString DefaultPrjName = "i.e. /PSE/AECU/CoreDev/platform";
+const QString DefaultCP = "none";
 #endif
 const QString MKShost = "--hostname=skobde-mks.kobde.trw.com";
 const QString MKSport = "--port=7001";
@@ -20,6 +22,9 @@ const QString DefMKSHost = "skobde-mks.kobde.trw.com";
 
 
 const QString XMLHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>";
+
+QString Log = "";
+
 
 MainDialog::MainDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MainDialog)
 {
@@ -42,6 +47,7 @@ MainDialog::MainDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MainDialog
 #ifdef QT_DEBUG
     ui->mks_portedit->setText("7001");
     ui->mks_serveredit->setText("skobde-mkstest.kobde.trw.com");
+    ui->changePackageEdit->setText(DefaultCP);
 
     LoadXMLData("C:/Users/mcdonaldd/Documents/Qt/Projects/tmp.xml");
 
@@ -288,9 +294,17 @@ void MainDialog::on_toolButton_clicked()
 void MainDialog::on_m_pMKSGenButton_clicked()
 {
     QString cmd;
+    QProcess cmdProc;
     int i;
 
-    QProcess cmdProc;
+    Log = "";
+
+    //**** Verify Integrity is running, MKS Login ****
+    // Add Command Log entry
+    Log += "Checking for MKS Integrity Client in Windows Processes";
+    Log += "\n";
+    Log += "-tasklist";
+    Log += "\n";
     cmdProc.start("tasklist");
     if(!cmdProc.waitForFinished())
     {
@@ -301,6 +315,8 @@ void MainDialog::on_m_pMKSGenButton_clicked()
         msgBox.setDefaultButton(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.exec();
+
+    qDebug() << Log;
         return;
     }
 
@@ -317,7 +333,9 @@ void MainDialog::on_m_pMKSGenButton_clicked()
         if (item.contains("IntegrityClient.exe"))
         {
             // Found the Client running, break the loop
-            qDebug() << item;
+            Log += item;
+            Log += "\n";
+//            qDebug() << item;
             break;
         }
     }
@@ -331,6 +349,7 @@ void MainDialog::on_m_pMKSGenButton_clicked()
         msgBox.setDefaultButton(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.exec();
+        qDebug() << Log;
         return;
     }
 
@@ -341,7 +360,12 @@ void MainDialog::on_m_pMKSGenButton_clicked()
             ui->lineEdit->text() + "/project.pj";
 
 
-    qDebug() << cmd;
+//    qDebug() << cmd;
+    Log += "Verify Root Project Exists";
+    Log += "\n";
+    Log += "-";
+    Log += cmd;
+    Log += "\n";
 
     cmdProc.start(cmd);
     if (!cmdProc.waitForFinished())
@@ -353,6 +377,7 @@ void MainDialog::on_m_pMKSGenButton_clicked()
         msgBox.setDefaultButton(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.exec();
+        qDebug() << Log;
         return;
     }
     QString stdOut, stdErr;
@@ -360,11 +385,20 @@ void MainDialog::on_m_pMKSGenButton_clicked()
     stdErr = cmdProc.readAllStandardError();
     if (stdOut != "")
     {
-        qDebug() << "stdOut = " << stdOut;
+//        qDebug() << "stdOut = " << stdOut;
     }
     else
     {
-        qDebug() << "stdErr = " << stdErr;
+//        qDebug() << "stdErr = " << stdErr;
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Invalid Root Project");
+        msgBox.setText("The Root Project Does not Exist.");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.exec();
+        qDebug() << Log;
+        return;
     }
 
     // Root Project exists, Check if new structure top-level already exists.
@@ -373,9 +407,20 @@ void MainDialog::on_m_pMKSGenButton_clicked()
     tmpNode = StdModel->invisibleRootItem();
     tmpNode = tmpNode->child(0);
     nodeText = tmpNode->text();
-    cmd = "si projectinfo --hostname=" + ui->mks_serveredit->text() + " --port=" + ui->mks_portedit->text() + " --project=" + \
-            ui->lineEdit->text() + "/" + tmpNode->text() + "/project.pj";
-    qDebug() << cmd;
+    cmd = "si createsubproject --no --hostname=" + ui->mks_serveredit->text() + " --port=" + ui->mks_portedit->text() + " --changePackageId=" +\
+            ui->changePackageEdit->text() + " --nocloseCP --project=" + ui->lineEdit->text() + "/project.pj " + tmpNode->text() + "/project.pj"; //01_From_Customer/project.pj
+
+    CreateMKSProjects("", tmpNode);
+
+    qDebug() << Log;
+    return;
+
+//    qDebug() << "First Node-" << tmpNode->text();
+    Log += "Add First Node";
+    Log += "\n";
+    Log += "-";
+    Log += cmd;
+    Log += "\n";
 
     cmdProc.start(cmd);
     if (!cmdProc.waitForFinished())
@@ -387,6 +432,7 @@ void MainDialog::on_m_pMKSGenButton_clicked()
         msgBox.setDefaultButton(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.exec();
+        qDebug() << Log;
         return;
     }
 
@@ -394,7 +440,7 @@ void MainDialog::on_m_pMKSGenButton_clicked()
     stdErr = cmdProc.readAllStandardError();
     if (stdOut != "")
     {
-        qDebug() << "stdOut = " << stdOut;
+//        qDebug() << "stdOut = " << stdOut;
         QMessageBox msgBox;
         msgBox.setWindowTitle("Root Project already exists");
         msgBox.setText("Could not run command lines for MKS integrity.");
@@ -403,37 +449,74 @@ void MainDialog::on_m_pMKSGenButton_clicked()
         msgBox.setIcon(QMessageBox::Question);
         if (msgBox.exec() == QMessageBox::No)
         {
+            qDebug() << Log;
             return;
         }
 
     }
     // Project does not exist, so start creating it.
-    qDebug() << "stdErr = " << stdErr;
+//    qDebug() << "stdErr = " << stdErr;
 //    tmpNode = StdModel->invisibleRootItem();
 //    nodeText = tmpNode->text();
     CreateMKSProjects(nodeText, tmpNode);
+
+
+//    qDebug() << Log;
+
 
 }
 
 void MainDialog::CreateMKSProjects(QString root, QStandardItem *rootItem)
 {
-    int i;
+    int i, j = 0;
     QStandardItem *tmpItem;
     tmpItem = rootItem;
-    qDebug () << tmpItem->text();
+    qDebug() << "Node-" << tmpItem->text() << "-" << root;
 
+    QString cmd;
+    QProcess cmdProc;
+
+    if (root != "")
+    {
+        cmd = "si createsubproject --no --hostname=" + ui->mks_serveredit->text() + " --port=" + \
+                ui->mks_portedit->text() + " --changePackageId=" + ui->changePackageEdit->text() + \
+                " --nocloseCP --project=" + ui->lineEdit->text() + root + "/project.pj " + \
+                tmpItem->text() + "/project.pj"; //01_From_Customer/project.pj
+    }
+    else
+    {
+        cmd = "si createsubproject --no --hostname=" + ui->mks_serveredit->text() + " --port=" + \
+                ui->mks_portedit->text() + " --changePackageId=" + ui->changePackageEdit->text() + \
+                " --nocloseCP --project=" + ui->lineEdit->text() + "/project.pj " + \
+                tmpItem->text() + "/project.pj"; //01_From_Customer/project.pj
+    }
+
+    Log += "Add Node-";
+    Log += tmpItem->text();
+    Log += "\n";
+    Log += "-";
+    Log += cmd;
+    Log += "\n";
+
+    //si createsubproject --no --hostname=%mkshost% --port=%mksport% --changePackageId=%changePackageID% --nocloseCP --project=%project% 01_From_Customer/project.pj
     for (i = 0; i < rootItem->rowCount(); i++)
     {
-        tmpItem = rootItem->child(i);
+//        tmpItem = rootItem->child(i);
         if (tmpItem->hasChildren())
         {
             QStandardItem *childItem;
-            childItem = tmpItem->child(0);
-            CreateMKSProjects(tmpItem->text(), tmpItem);
+            childItem = tmpItem->child(j);
+            CreateMKSProjects(root + "/" + tmpItem->text(), childItem);
+            j++;
         }
         else
         {
-            qDebug() << tmpItem->text();
+//            Log += "Add Node";
+//            Log += "\n";
+//            Log += "-";
+//            Log += tmpItem->text();
+//            Log += "\n";
+//            qDebug() << tmpItem->text();
         }
     }
 }
