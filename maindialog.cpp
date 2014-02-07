@@ -8,8 +8,8 @@
 const QString DirTagName = "dir";
 const QString DirAttrName = "name";
 #ifdef QT_DEBUG
-const QString DefaultPrjName = "/PSE/CoreDev/platform";
-const QString DefaultCP = ":none";
+const QString DefaultPrjName = "/PSE/CoreDev/platform/test1";
+const QString DefaultCP = "5290:35";
 #else
 const QString DefaultPrjName = "i.e. /PSE/AECU/CoreDev/platform";
 const QString DefaultCP = "none";
@@ -25,6 +25,13 @@ const QString XMLHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\
 
 QString Log = "";
 
+int TotalNodes = 0;
+int NodesCreated = 0;
+QString PrgStyleBLKText = "QProgressBar {border: 2px solid grey; border-radius: 5px; text-align: center; color:#000000;}";
+QString PrgStyleWHTText = "QProgressBar {border: 2px solid grey; border-radius: 5px; text-align: center; color:#FFFFFF;}";
+//QString PrgChunkStytle = "QProgressBar::chunk {background-color: #CD96CD; width: 10px; margin: 0.5px;}";
+QString PrgChunkStytle = "QProgressBar::chunk {background-color: #FFC823; width: 10px; margin: 0.5px;}";
+
 
 MainDialog::MainDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MainDialog)
 {
@@ -36,25 +43,32 @@ MainDialog::MainDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MainDialog
     ui->treeView->expandAll();
     ui->treeView->setHeaderHidden(true);
 
-    ui->progressBar->setValue(0);
-    ui->progressBar->setVisible(false);
+    ui->prgBar->setValue(0);
+    ui->prgBar->setVisible(true);
+    ui->prgBar->setStyleSheet(PrgStyleBLKText + PrgChunkStytle);
 
     ui->textEdit->setText("");
     ui->lineEdit->setStyleSheet("color: grey;");
     ui->lineEdit->setText(DefaultPrjName);
     ui->lineEdit->selectAll();
 
+
+
 #ifdef QT_DEBUG
     ui->mks_portedit->setText("7001");
     ui->mks_serveredit->setText("skobde-mkstest.kobde.trw.com");
     ui->changePackageEdit->setText(DefaultCP);
 
-    LoadXMLData("C:/Users/mcdonaldd/Documents/Qt/Projects/tmp.xml");
+    ui->textEdit->setText("C:/Users/mcdonaldd/Documents/Qt/Projects/tmp.xml");
+    LoadXMLData(ui->textEdit->text());
+    ui->m_pMKSGenButton->setEnabled(true);
 
 
 #else
     ui->mks_portedit->setText(DefMKSPort);
     ui->mks_serveredit->setText(DefMKSHost);
+    ui->changePackageEdit->setText(DefaultCP);
+    ui->m_pMKSGenButton->setEnabled(true);
 #endif
 
 }
@@ -116,6 +130,7 @@ void MainDialog::ProcessXMLData(QDomElement *rootxml, QStandardItem *rootNode, Q
 //        qDebug() << tabStr << nextItem.attribute(DirAttrName);
         tmpNode = new QStandardItem(nextItem.attribute(DirAttrName));
         rootNode->appendRow(tmpNode);
+        TotalNodes++;
 
         if (nextItem.hasChildNodes())
         {
@@ -142,17 +157,22 @@ void MainDialog::LoadXMLData(QString sFname)
 
     // Add the Root node
 //    qDebug() << root.attribute(DirAttrName);
+    TotalNodes = 0;
 
     // Add the node
     QStandardItem *tmpNode;
     tmpNode = new QStandardItem(root.attribute(DirAttrName));
     Node->appendRow(tmpNode);
+    TotalNodes++;
 
     root = root.firstChildElement(DirTagName);
+
 
     ProcessXMLData(&root, tmpNode, "  ");
     ui->treeView->expandAll();
 
+    NodesCreated = 0;
+    qDebug() << TotalNodes;
 }
 
 void MainDialog::on_pBLoad_clicked()
@@ -298,6 +318,9 @@ void MainDialog::on_m_pMKSGenButton_clicked()
     int i;
 
     Log = "";
+    ui->prgBar->setVisible(true);
+    ui->prgBar->setValue(0);
+
 
     //**** Verify Integrity is running, MKS Login ****
     // Add Command Log entry
@@ -410,6 +433,7 @@ void MainDialog::on_m_pMKSGenButton_clicked()
     cmd = "si createsubproject --no --hostname=" + ui->mks_serveredit->text() + " --port=" + ui->mks_portedit->text() + " --changePackageId=" +\
             ui->changePackageEdit->text() + " --nocloseCP --project=" + ui->lineEdit->text() + "/project.pj " + tmpNode->text() + "/project.pj"; //01_From_Customer/project.pj
 
+    NodesCreated = 0;
     CreateMKSProjects("", tmpNode);
 
 #if 0
@@ -469,10 +493,11 @@ void MainDialog::on_m_pMKSGenButton_clicked()
 void MainDialog::CreateMKSProjects(QString root, QStandardItem *rootItem)
 {
     QString stdOut, stdErr;
+    int exitCode;
     int i, j = 0;
     QStandardItem *tmpItem;
     tmpItem = rootItem;
-    qDebug() << "Node-" << tmpItem->text() << "-" << root;
+//    qDebug() << "Node-" << tmpItem->text() << "-" << root;
 
     QString cmd;
     QProcess cmdProc;
@@ -500,24 +525,32 @@ void MainDialog::CreateMKSProjects(QString root, QStandardItem *rootItem)
     Log += "\n";
     if (RunMKSCmd(&cmd, &cmdProc))
     {
+        exitCode = cmdProc.exitCode();
         stdOut = cmdProc.readAllStandardOutput();
         stdErr = cmdProc.readAllStandardError();
-        if (stdOut != "")
+
+        NodesCreated++;
+        if (exitCode == 0)
         {
             // Success
-            qDebug() << "Success" << stdOut;
+//            qDebug() << "Success" << stdErr;
             Log += "Success-\n";
-            Log += stdOut;
+            Log += stdErr;
             Log += "\n";
         }
         else
         {
             // Fail
+//            qDebug() << "Fail-" << stdErr;
             Log += "Fail\n";
             Log += stdErr;
             Log += "\n";
-            qDebug() << "Fail-" << stdErr;
         }
+        if (((NodesCreated * 100) / TotalNodes) > 50)
+        {
+//            ui->prgBar->setStyleSheet(PrgStyleWHTText + PrgChunkStytle);
+        }
+        ui->prgBar->setValue((NodesCreated * 100) / TotalNodes);
     }
     //si createsubproject --no --hostname=%mkshost% --port=%mksport% --changePackageId=%changePackageID% --nocloseCP --project=%project% 01_From_Customer/project.pj
     for (i = 0; i < rootItem->rowCount(); i++)

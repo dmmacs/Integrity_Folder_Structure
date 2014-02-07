@@ -19,15 +19,15 @@
      <x>10</x>
      <y>40</y>
      <width>431</width>
-     <height>641</height>
+     <height>511</height>
     </rect>
    </property>
   </widget>
   <widget class="QPushButton" name="pBLoad">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>690</y>
+     <x>6</x>
+     <y>560</y>
      <width>91</width>
      <height>23</height>
     </rect>
@@ -39,8 +39,8 @@
   <widget class="QPushButton" name="pBSave">
    <property name="geometry">
     <rect>
-     <x>110</x>
-     <y>690</y>
+     <x>106</x>
+     <y>560</y>
      <width>91</width>
      <height>23</height>
     </rect>
@@ -52,8 +52,8 @@
   <widget class="QPushButton" name="pB_ReadDirStruct">
    <property name="geometry">
     <rect>
-     <x>344</x>
-     <y>690</y>
+     <x>340</x>
+     <y>560</y>
      <width>101</width>
      <height>23</height>
     </rect>
@@ -62,11 +62,11 @@
     <string>Read Dir Struct</string>
    </property>
   </widget>
-  <widget class="QProgressBar" name="progressBar">
+  <widget class="QProgressBar" name="prgBar">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>730</y>
+     <y>590</y>
      <width>431</width>
      <height>23</height>
     </rect>
@@ -218,6 +218,16 @@
    </property>
    <property name="text">
     <string/>
+   </property>
+  </widget>
+  <widget class="QTextEdit" name="textEdit_2">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>620</y>
+     <width>431</width>
+     <height>141</height>
+    </rect>
    </property>
   </widget>
  </widget>
