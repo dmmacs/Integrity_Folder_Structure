@@ -56,7 +56,7 @@ private:
     void LoadXMLData(QString sFname);
 
     void CreateMKSProjects(QString root, QStandardItem *rootItem);
-
+    boolean RunMKSCmd(QString *cmd, QProcess *proc);
 };
 
 

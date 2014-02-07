@@ -9,7 +9,7 @@ const QString DirTagName = "dir";
 const QString DirAttrName = "name";
 #ifdef QT_DEBUG
 const QString DefaultPrjName = "/PSE/CoreDev/platform";
-const QString DefaultCP = "none";
+const QString DefaultCP = ":none";
 #else
 const QString DefaultPrjName = "i.e. /PSE/AECU/CoreDev/platform";
 const QString DefaultCP = "none";
@@ -412,9 +412,7 @@ void MainDialog::on_m_pMKSGenButton_clicked()
 
     CreateMKSProjects("", tmpNode);
 
-    qDebug() << Log;
-    return;
-
+#if 0
 //    qDebug() << "First Node-" << tmpNode->text();
     Log += "Add First Node";
     Log += "\n";
@@ -460,14 +458,17 @@ void MainDialog::on_m_pMKSGenButton_clicked()
 //    nodeText = tmpNode->text();
     CreateMKSProjects(nodeText, tmpNode);
 
+#endif
+    qDebug() << Log;
 
-//    qDebug() << Log;
+    qDebug() << Log.size();
 
 
 }
 
 void MainDialog::CreateMKSProjects(QString root, QStandardItem *rootItem)
 {
+    QString stdOut, stdErr;
     int i, j = 0;
     QStandardItem *tmpItem;
     tmpItem = rootItem;
@@ -497,7 +498,27 @@ void MainDialog::CreateMKSProjects(QString root, QStandardItem *rootItem)
     Log += "-";
     Log += cmd;
     Log += "\n";
-
+    if (RunMKSCmd(&cmd, &cmdProc))
+    {
+        stdOut = cmdProc.readAllStandardOutput();
+        stdErr = cmdProc.readAllStandardError();
+        if (stdOut != "")
+        {
+            // Success
+            qDebug() << "Success" << stdOut;
+            Log += "Success-\n";
+            Log += stdOut;
+            Log += "\n";
+        }
+        else
+        {
+            // Fail
+            Log += "Fail\n";
+            Log += stdErr;
+            Log += "\n";
+            qDebug() << "Fail-" << stdErr;
+        }
+    }
     //si createsubproject --no --hostname=%mkshost% --port=%mksport% --changePackageId=%changePackageID% --nocloseCP --project=%project% 01_From_Customer/project.pj
     for (i = 0; i < rootItem->rowCount(); i++)
     {
@@ -520,3 +541,29 @@ void MainDialog::CreateMKSProjects(QString root, QStandardItem *rootItem)
         }
     }
 }
+
+boolean MainDialog::RunMKSCmd(QString *cmd, QProcess *proc)
+{
+    boolean retVal;
+
+    proc->start(*cmd);
+    if (!proc->waitForFinished())
+    {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Could not run command to add node");
+        msgBox.setText("Could not run command lines for MKS integrity.");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.exec();
+        retVal = false;
+    }
+    else
+    {
+        retVal = true;
+    }
+
+    return (retVal);
+
+}
+
