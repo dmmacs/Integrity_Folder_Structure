@@ -18,7 +18,8 @@ SOURCES += main.cpp\
     mylineeditclass.cpp
 
 HEADERS  += maindialog.h \
-    mylineeditclass.h
+    mylineeditclass.h \
+    version.h
 
 FORMS    += maindialog.ui
 

@@ -3,6 +3,7 @@
 
 #include "mksfoldertemplate.h"
 #include "windows.h"
+#include "version.h"
 
 
 const QString DirTagName = "dir";
@@ -52,6 +53,7 @@ MainDialog::MainDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MainDialog
     ui->lineEdit->selectAll();
 
     ui->label_5->setVisible(true);
+    ui->label_5->setText("Version: " + QString::number(Version::MAJOR) + "." + QString::number(Version::MINOR) + "." + QString::number(Version::BUILD));
 
 
 #ifdef QT_DEBUG
