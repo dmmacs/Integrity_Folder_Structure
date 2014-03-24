@@ -29,7 +29,6 @@ int TotalNodes = 0;
 int NodesCreated = 0;
 QString PrgStyleBLKText = "QProgressBar {border: 2px solid grey; border-radius: 5px; text-align: center; color:#000000;}";
 QString PrgStyleWHTText = "QProgressBar {border: 2px solid grey; border-radius: 5px; text-align: center; color:#FFFFFF;}";
-//QString PrgChunkStytle = "QProgressBar::chunk {background-color: #CD96CD; width: 10px; margin: 0.5px;}";
 QString PrgChunkStytle = "QProgressBar::chunk {background-color: #FFC823; width: 10px; margin: 0.5px;}";
 
 
@@ -156,7 +155,6 @@ void MainDialog::LoadXMLData(QString sFname)
     QDomElement root = xmldoc.firstChildElement(DirTagName);
 
     // Add the Root node
-//    qDebug() << root.attribute(DirAttrName);
     TotalNodes = 0;
 
     // Add the node
@@ -358,7 +356,6 @@ void MainDialog::on_m_pMKSGenButton_clicked()
             // Found the Client running, break the loop
             Log += item;
             Log += "\n";
-//            qDebug() << item;
             break;
         }
     }
@@ -376,7 +373,7 @@ void MainDialog::on_m_pMKSGenButton_clicked()
         return;
     }
 
-    // MKS Integrity is running, start building commandlines and run
+    // MKS Integrity is running,
 
     // Verify the root project exists
     cmd = "si projectinfo --hostname=" + ui->mks_serveredit->text() + " --port=" + ui->mks_portedit->text() + " --project=" + \
