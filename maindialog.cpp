@@ -51,6 +51,7 @@ MainDialog::MainDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MainDialog
     ui->lineEdit->setText(DefaultPrjName);
     ui->lineEdit->selectAll();
 
+    ui->label_5->setVisible(true);
 
 
 #ifdef QT_DEBUG
