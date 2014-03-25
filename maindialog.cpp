@@ -178,9 +178,11 @@ void MainDialog::LoadXMLData(QString sFname)
 
 void MainDialog::on_pBLoad_clicked()
 {
-    if (ui->lineEdit->text() != "")
+    if (ui->textEdit->text() != "")
     {
-        LoadXMLData(ui->lineEdit->text());
+        qDebug() << ui->textEdit->text();
+
+        LoadXMLData(ui->textEdit->text());
     }
 
 }

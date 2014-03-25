@@ -220,12 +220,12 @@
     <string/>
    </property>
   </widget>
-  <widget class="QTextEdit" name="textEdit_2">
+  <widget class="QTextEdit" name="Commands">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>620</y>
-     <width>431</width>
+     <width>671</width>
      <height>141</height>
     </rect>
    </property>
@@ -233,24 +233,14 @@
   <widget class="QLabel" name="label_5">
    <property name="geometry">
     <rect>
-     <x>480</x>
-     <y>370</y>
-     <width>81</width>
+     <x>450</x>
+     <y>530</y>
+     <width>231</width>
      <height>16</height>
     </rect>
    </property>
    <property name="text">
     <string>Version 0.3</string>
-   </property>
-  </widget>
-  <widget class="QPlainTextEdit" name="plainTextEdit">
-   <property name="geometry">
-    <rect>
-     <x>490</x>
-     <y>430</y>
-     <width>104</width>
-     <height>87</height>
-    </rect>
    </property>
   </widget>
  </widget>
