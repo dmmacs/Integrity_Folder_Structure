@@ -56,12 +56,15 @@ MainDialog::MainDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MainDialog
     ui->label_5->setText("Version: " + QString::number(Version::MAJOR) + "." + QString::number(Version::MINOR) + "." + QString::number(Version::BUILD));
 
 
+    isDirty = false;
+
 #ifdef QT_DEBUG
     ui->mks_portedit->setText("7001");
     ui->mks_serveredit->setText("skobde-mkstest.kobde.trw.com");
     ui->changePackageEdit->setText(DefaultCP);
 
-    ui->textEdit->setText("C:/Users/mcdonaldd/Documents/Qt/Projects/tmp.xml");
+
+    ui->textEdit->setText("C:/Users/mcdonaldd/Documents/Qt/Projects/MKS_Folder_Structure/tmp.xml");
     LoadXMLData(ui->textEdit->text());
     ui->m_pMKSGenButton->setEnabled(true);
 
@@ -105,11 +108,11 @@ void MainDialog::SaveXMLFile(QString sPath, QDomDocument *xmlDoc)
 {
     QFile file(sPath);
 
-    qDebug() << sPath;
+//    qDebug() << sPath;
 
     if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Failed to open file";
+//        qDebug() << "Failed to open file";
         ui->textEdit->setText("Failed to open file");
     }
     else
@@ -173,14 +176,14 @@ void MainDialog::LoadXMLData(QString sFname)
     ui->treeView->expandAll();
 
     NodesCreated = 0;
-    qDebug() << TotalNodes;
+//    qDebug() << TotalNodes;
 }
 
 void MainDialog::on_pBLoad_clicked()
 {
     if (ui->textEdit->text() != "")
     {
-        qDebug() << ui->textEdit->text();
+//        qDebug() << ui->textEdit->text();
 
         LoadXMLData(ui->textEdit->text());
     }
@@ -189,15 +192,43 @@ void MainDialog::on_pBLoad_clicked()
 
 void MainDialog::on_pBSave_clicked()
 {
-    if (ui->lineEdit->text() != "")
+    bool overwrite = false;
+    if (ui->textEdit->text() != "")
     {
-        SaveXMLFile(ui->lineEdit->text(), &xmldoc);
+        QFile Fout;//("ui->textEdit->text()");
+        qDebug() << ui->textEdit->text();
+        if (Fout.exists(ui->textEdit->text()))
+        {
+            QMessageBox::StandardButton reply;
+            reply = QMessageBox::question(this, "Overwrite File?", "Overwrite?");
+            if (reply == QMessageBox::Yes)
+            {
+                overwrite = true;
+            }
+//            msgBox.setWindowTitle("Overwrite File?");
+//            msgBox.setText("Overwrite File?");
+//            msgBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No);
+//            msgBox.setDefaultButton(QMessageBox::Yes);
+//            msgBox.setIcon(QMessageBox::Warning);
+
+        }
+        else
+        {
+            overwrite = true;
+        }
+        if (overwrite == true)
+        {
+            SaveXMLFile(ui->textEdit->text(), &xmldoc);
+            isDirty = false;
+        }
     }
-    else
+
+
+    if (overwrite == false)
     {
         QString sfname = QFileDialog::getSaveFileName(this, tr("Enter FileName"),directory.path());
         ui->textEdit->setText(sfname);
-        SaveXMLFile(ui->lineEdit->text(), &xmldoc);
+        SaveXMLFile(sfname, &xmldoc);
     }
 }
 
@@ -213,6 +244,7 @@ void MainDialog::on_pB_ReadDirStruct_clicked()
     {
         StdModel->clear();
         xmldoc.clear();
+        ui->textEdit->setText("");
 
         directory.setPath(sPath);
         QDir tmp;
@@ -226,13 +258,13 @@ void MainDialog::on_pB_ReadDirStruct_clicked()
 
         ReadDir(sPath, &nodeName);
         nodeName += "</" + DirTagName + ">" + "\n";
-        qDebug() << nodeName;
+//        qDebug() << nodeName;
 
         QTemporaryFile file("tempXML",this);
         file.setAutoRemove(false);
 
         file.open();//QIODevice::WriteOnly | QIODevice::Text);
-        qDebug() << file.fileName();
+//        qDebug() << file.fileName();
 
 
         // Store the xml data in a temporary file
@@ -243,6 +275,9 @@ void MainDialog::on_pB_ReadDirStruct_clicked()
         LoadXMLData(file.fileName());
 
         file.remove();
+
+        ui->textEdit->setText("");
+        isDirty = true;
 
     }
 
@@ -298,7 +333,7 @@ void MainDialog::on_toolButton_clicked()
 {
     QString sFname = QFileDialog::getOpenFileName(this,tr("Open File"),directory.path(),tr("Files(*.*)"));
 
-    qDebug() << sFname;
+//    qDebug() << sFname;
     ui->textEdit->setText(sFname);
 
     if (sFname != "")
@@ -342,7 +377,7 @@ void MainDialog::on_m_pMKSGenButton_clicked()
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.exec();
 
-    qDebug() << Log;
+//    qDebug() << Log;
         return;
     }
 
@@ -374,7 +409,7 @@ void MainDialog::on_m_pMKSGenButton_clicked()
         msgBox.setDefaultButton(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.exec();
-        qDebug() << Log;
+//        qDebug() << Log;
         return;
     }
 
@@ -402,7 +437,7 @@ void MainDialog::on_m_pMKSGenButton_clicked()
         msgBox.setDefaultButton(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.exec();
-        qDebug() << Log;
+//        qDebug() << Log;
         return;
     }
     QString stdOut, stdErr;
@@ -422,7 +457,7 @@ void MainDialog::on_m_pMKSGenButton_clicked()
         msgBox.setDefaultButton(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.exec();
-        qDebug() << Log;
+//        qDebug() << Log;
         return;
     }
 
@@ -456,7 +491,7 @@ void MainDialog::on_m_pMKSGenButton_clicked()
         msgBox.setDefaultButton(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.exec();
-        qDebug() << Log;
+//        qDebug() << Log;
         return;
     }
 
@@ -473,7 +508,7 @@ void MainDialog::on_m_pMKSGenButton_clicked()
         msgBox.setIcon(QMessageBox::Question);
         if (msgBox.exec() == QMessageBox::No)
         {
-            qDebug() << Log;
+//            qDebug() << Log;
             return;
         }
 
@@ -485,9 +520,9 @@ void MainDialog::on_m_pMKSGenButton_clicked()
     CreateMKSProjects(nodeText, tmpNode);
 
 #endif
-    qDebug() << Log;
+//    qDebug() << Log;
 
-    qDebug() << Log.size();
+//    qDebug() << Log.size();
 
 
 }
@@ -602,3 +637,32 @@ boolean MainDialog::RunMKSCmd(QString *cmd, QProcess *proc)
 
 }
 
+void MainDialog::closeEvent(QCloseEvent *event)
+{
+    if (isDirty)
+    {
+        //Messagebox to save
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "Overwrite File?", "Overwrite?");
+        if (reply == QMessageBox::Yes)
+        {
+            on_pBSave_clicked();
+            if (isDirty == true)
+            {
+                event->ignore();
+            }
+            else
+            {
+                event->accept();
+            }
+        }
+        else
+        {
+            event->accept();
+        }
+    }
+    else
+    {
+        event->accept();
+    }
+}
