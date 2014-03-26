@@ -48,6 +48,9 @@ private:
     QStandardItemModel *StdModel;
     QDomDocument xmldoc;
     QDir directory;
+    bool isDirty;
+
+    void closeEvent(QCloseEvent *event);
 
     void ParseXMLFile(QString sPath, QDomDocument *xmlDoc);
     void SaveXMLFile(QString sPath, QDomDocument *xmlDoc);
