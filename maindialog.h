@@ -13,7 +13,7 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QDesktopWidget>
-
+#include <QKeyEvent>
 
 namespace Ui {
 class MainDialog;
@@ -46,6 +46,9 @@ private slots:
     void on_m_pMKSGenButton_clicked();
 
     void on_ConsoleCheck_clicked();
+
+    void keyPressEvent(QKeyEvent * event);
+
 
 private:
     Ui::MainDialog *ui;

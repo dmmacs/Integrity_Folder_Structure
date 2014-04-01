@@ -601,20 +601,41 @@ boolean MainDialog::RunMKSCmd(QString *cmd, QProcess *proc)
 
 void MainDialog::closeEvent(QCloseEvent *event)
 {
+    bool saveFile = false;
+
     if (isDirty)
     {
         //Messagebox to save
         QMessageBox::StandardButton reply;
-        reply = QMessageBox::question(this, "Overwrite File?", "Overwrite?");
-        if (reply == QMessageBox::Yes)
+
+        if (ui->textEdit->text() != "")
+        {
+            reply = QMessageBox::question(this, "Overwrite File?", "Overwrite?");
+            if (reply == QMessageBox::Yes)
+            {
+                saveFile = true;
+            }
+        }
+        else
+        {
+            reply = QMessageBox::question(this, "Save Directory Strcutre to XML?","Save Directory Strcutre to XML?");
+            if (reply == QMessageBox::Yes)
+            {
+                saveFile = true;
+            }
+        }
+
+        if (saveFile == true)
         {
             on_pBSave_clicked();
             if (isDirty == true)
             {
+                // User Saved file, we are done.
                 event->ignore();
             }
             else
             {
+                // User clicked on Cancel, stay here.
                 event->accept();
             }
         }
@@ -686,3 +707,12 @@ void MainDialog::AddText(QString Str, int tabCnt)
 //    ui->Commands->setText(ui->Commands->toPlainText() + Str + "\n");
 }
 
+
+void MainDialog::keyPressEvent(QKeyEvent * event)
+{
+    if(event->key() == Qt::Key_Escape)
+    {
+        this->close();
+    }
+
+}
