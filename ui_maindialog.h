@@ -14,6 +14,7 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QCheckBox>
+#include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
@@ -45,16 +46,16 @@ public:
     QLabel *label_3;
     MyLineEditClass *mks_portedit;
     QLabel *label_4;
-    MyLineEditClass *changePackageEdit;
     QTextEdit *Commands;
     QLabel *label_5;
     QCheckBox *ConsoleCheck;
+    QComboBox *changePackageEdit;
 
     void setupUi(QDialog *MainDialog)
     {
         if (MainDialog->objectName().isEmpty())
             MainDialog->setObjectName(QStringLiteral("MainDialog"));
-        MainDialog->resize(681, 620);
+        MainDialog->resize(1251, 620);
         QIcon icon;
         icon.addFile(QStringLiteral("../../../../Desktop/temp/Trw_logo.png"), QSize(), QIcon::Normal, QIcon::Off);
         MainDialog->setWindowIcon(icon);
@@ -107,9 +108,6 @@ public:
         label_4 = new QLabel(MainDialog);
         label_4->setObjectName(QStringLiteral("label_4"));
         label_4->setGeometry(QRect(450, 140, 221, 16));
-        changePackageEdit = new MyLineEditClass(MainDialog);
-        changePackageEdit->setObjectName(QStringLiteral("changePackageEdit"));
-        changePackageEdit->setGeometry(QRect(450, 160, 221, 22));
         Commands = new QTextEdit(MainDialog);
         Commands->setObjectName(QStringLiteral("Commands"));
         Commands->setGeometry(QRect(680, 10, 565, 601));
@@ -119,7 +117,12 @@ public:
         label_5->setGeometry(QRect(450, 590, 231, 16));
         ConsoleCheck = new QCheckBox(MainDialog);
         ConsoleCheck->setObjectName(QStringLiteral("ConsoleCheck"));
+        ConsoleCheck->setEnabled(false);
         ConsoleCheck->setGeometry(QRect(470, 10, 121, 20));
+        changePackageEdit = new QComboBox(MainDialog);
+        changePackageEdit->setObjectName(QStringLiteral("changePackageEdit"));
+        changePackageEdit->setGeometry(QRect(450, 160, 221, 22));
+        changePackageEdit->setEditable(true);
         QWidget::setTabOrder(treeView, pBLoad);
         QWidget::setTabOrder(pBLoad, pBSave);
 
@@ -143,9 +146,9 @@ public:
         label_3->setText(QApplication::translate("MainDialog", "MKS Port", 0));
         mks_portedit->setText(QString());
         label_4->setText(QApplication::translate("MainDialog", "Change Package", 0));
-        changePackageEdit->setText(QString());
         label_5->setText(QApplication::translate("MainDialog", "Version 0.3", 0));
         ConsoleCheck->setText(QApplication::translate("MainDialog", "Show Console", 0));
+        changePackageEdit->setCurrentText(QString());
     } // retranslateUi
 
 };

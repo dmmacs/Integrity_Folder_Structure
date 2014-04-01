@@ -20,6 +20,7 @@
 <node CREATED="1396291570872" ID="ID_1928425774" MODIFIED="1396291585268" TEXT="Need to understand why can&apos;t work with / as root projects"/>
 <node CREATED="1383238024922" ID="ID_776215702" MODIFIED="1383238034847" TEXT="Validate CP exists"/>
 <node CREATED="1396293067265" ID="ID_186398359" MODIFIED="1396293070614" TEXT="Fix Dirty Flag"/>
+<node CREATED="1396371903748" ID="ID_1124193926" MODIFIED="1396371915345" TEXT="Resize blacks our window when using checkbox"/>
 </node>
 <node CREATED="1396312124163" FOLDED="true" ID="ID_1076454866" MODIFIED="1396312129873" POSITION="right" TEXT="Done">
 <node CREATED="1396291548149" ID="ID_684941024" MODIFIED="1396312118784" TEXT="Add Window for debugging information but only display if box checked?">

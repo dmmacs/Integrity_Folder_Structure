@@ -59,20 +59,20 @@ MainDialog::MainDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MainDialog
 
     isDirty = false;
 
-    Console_ptr = NULL;
 //    QPoint loc = this->pos();
     //this->move(0,this->pos().y());
+
+    ui->changePackageEdit->addItem(":none");
+    ui->changePackageEdit->addItem(":bypass");
 
 #ifdef QT_DEBUG
     ui->mks_portedit->setText("7001");
     ui->mks_serveredit->setText("skobde-mkstest.kobde.trw.com");
-    ui->changePackageEdit->setText(DefaultCP);
-
+    ui->changePackageEdit->setCurrentText(DefaultCP);
 
     ui->textEdit->setText("C:/Users/mcdonaldd/Documents/Qt/Projects/MKS_Folder_Structure/tmp.xml");
     LoadXMLData(ui->textEdit->text());
     ui->m_pMKSGenButton->setEnabled(true);
-
 
 #else
     ui->mks_portedit->setText(DefMKSPort);
@@ -81,15 +81,12 @@ MainDialog::MainDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MainDialog
     ui->m_pMKSGenButton->setEnabled(true);
 #endif
 
+
+
 }
 
 MainDialog::~MainDialog()
 {
-    if (Console_ptr != NULL)
-    {
-        delete Console_ptr;
-        Console_ptr = NULL;
-    }
     delete ui;
 }
 
@@ -478,7 +475,7 @@ void MainDialog::on_m_pMKSGenButton_clicked()
     tmpNode = tmpNode->child(0);
     nodeText = tmpNode->text();
     cmd = "si createsubproject --no --hostname=" + ui->mks_serveredit->text() + " --port=" + ui->mks_portedit->text() + " --changePackageId=" +\
-            ui->changePackageEdit->text() + " --nocloseCP --project=" + ui->lineEdit->text() + "/project.pj " + tmpNode->text() + "/project.pj"; //01_From_Customer/project.pj
+            ui->changePackageEdit->currentText() + " --nocloseCP --project=" + ui->lineEdit->text() + "/project.pj " + tmpNode->text() + "/project.pj"; //01_From_Customer/project.pj
 
     NodesCreated = 0;
     CreateMKSProjects("", tmpNode);
@@ -507,14 +504,14 @@ void MainDialog::CreateMKSProjects(QString root, QStandardItem *rootItem)
     if (root != "")
     {
         cmd = "si createsubproject --no --hostname=" + ui->mks_serveredit->text() + " --port=" + \
-                ui->mks_portedit->text() + " --changePackageId=" + ui->changePackageEdit->text() + \
+                ui->mks_portedit->text() + " --changePackageId=" + ui->changePackageEdit->currentText() + \
                 " --nocloseCP --project=" + ui->lineEdit->text() + root + "/project.pj " + \
                 tmpItem->text() + "/project.pj"; //01_From_Customer/project.pj
     }
     else
     {
         cmd = "si createsubproject --no --hostname=" + ui->mks_serveredit->text() + " --port=" + \
-                ui->mks_portedit->text() + " --changePackageId=" + ui->changePackageEdit->text() + \
+                ui->mks_portedit->text() + " --changePackageId=" + ui->changePackageEdit->currentText() + \
                 " --nocloseCP --project=" + ui->lineEdit->text() + "/project.pj " + \
                 tmpItem->text() + "/project.pj"; //01_From_Customer/project.pj
     }
@@ -631,11 +628,6 @@ void MainDialog::closeEvent(QCloseEvent *event)
         event->accept();
     }
 
-    if (Console_ptr != NULL)
-    {
-        delete Console_ptr;
-        Console_ptr = NULL;
-    }
 }
 
 void MainDialog::on_ConsoleCheck_clicked()
@@ -643,37 +635,18 @@ void MainDialog::on_ConsoleCheck_clicked()
     if (ui->ConsoleCheck->isChecked())
     {
         this->resize(1251, this->size().height());
- #if 0
-        if (Console_ptr == NULL)
-        {
-            Console_ptr = new IntegrityConsole;
-            Console_ptr->setWindowFlags(Qt::FramelessWindowHint);
-        }
-        Console_ptr->show();
-        QPoint topleft = this->pos();
-        QSize dlgsize = this->size();
-        Console_ptr->move(topleft.x() + dlgsize.width() + 20,topleft.y());
-#endif
     }
     else
     {
         this->resize(681, this->size().height());
 
-        if (Console_ptr != NULL)
-        {
-            Console_ptr->hide();
-        }
     }
 }
 
 
 void MainDialog::UpdateLog(QString Str, int tabCnt = 0)
 {
-    if (Console_ptr != NULL)
-    {
-        Console_ptr->AddText(Str, tabCnt);
-    }
-
+    AddText(Str, tabCnt);
     Log += Str;
     Log += "\n";
 }

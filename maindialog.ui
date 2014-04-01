@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>681</width>
+    <width>1251</width>
     <height>620</height>
    </rect>
   </property>
@@ -211,19 +211,6 @@
     <string>Change Package</string>
    </property>
   </widget>
-  <widget class="MyLineEditClass" name="changePackageEdit">
-   <property name="geometry">
-    <rect>
-     <x>450</x>
-     <y>160</y>
-     <width>221</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
   <widget class="QTextEdit" name="Commands">
    <property name="geometry">
     <rect>
@@ -251,6 +238,9 @@
    </property>
   </widget>
   <widget class="QCheckBox" name="ConsoleCheck">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>470</x>
@@ -261,6 +251,22 @@
    </property>
    <property name="text">
     <string>Show Console</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="changePackageEdit">
+   <property name="geometry">
+    <rect>
+     <x>450</x>
+     <y>160</y>
+     <width>221</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="editable">
+    <bool>true</bool>
+   </property>
+   <property name="currentText">
+    <string/>
    </property>
   </widget>
  </widget>
