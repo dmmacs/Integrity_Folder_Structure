@@ -6,12 +6,16 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>685</width>
-    <height>617</height>
+    <width>681</width>
+    <height>620</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainDialog</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../../../../Desktop/temp/Trw_logo.png</normaloff>../../../../Desktop/temp/Trw_logo.png</iconset>
   </property>
   <widget class="QTreeView" name="treeView">
    <property name="geometry">
@@ -223,11 +227,14 @@
   <widget class="QTextEdit" name="Commands">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>620</y>
-     <width>671</width>
-     <height>141</height>
+     <x>680</x>
+     <y>10</y>
+     <width>565</width>
+     <height>601</height>
     </rect>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
    </property>
   </widget>
   <widget class="QLabel" name="label_5">
@@ -241,6 +248,19 @@
    </property>
    <property name="text">
     <string>Version 0.3</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="ConsoleCheck">
+   <property name="geometry">
+    <rect>
+     <x>470</x>
+     <y>10</y>
+     <width>121</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Show Console</string>
    </property>
   </widget>
  </widget>

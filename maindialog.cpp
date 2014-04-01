@@ -13,7 +13,7 @@ const QString DefaultPrjName = "/PSE/CoreDev/platform/test1";
 const QString DefaultCP = "5290:35";
 #else
 const QString DefaultPrjName = "i.e. /PSE/AECU/CoreDev/platform";
-const QString DefaultCP = "none";
+const QString DefaultCP = ":none";
 #endif
 const QString MKShost = "--hostname=skobde-mks.kobde.trw.com";
 const QString MKSport = "--port=7001";
@@ -52,11 +52,16 @@ MainDialog::MainDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MainDialog
     ui->lineEdit->setText(DefaultPrjName);
     ui->lineEdit->selectAll();
 
+    // Version Text
     ui->label_5->setVisible(true);
     ui->label_5->setText("Version: " + QString::number(Version::MAJOR) + "." + QString::number(Version::MINOR) + "." + QString::number(Version::BUILD));
 
 
     isDirty = false;
+
+    Console_ptr = NULL;
+//    QPoint loc = this->pos();
+    //this->move(0,this->pos().y());
 
 #ifdef QT_DEBUG
     ui->mks_portedit->setText("7001");
@@ -80,6 +85,11 @@ MainDialog::MainDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MainDialog
 
 MainDialog::~MainDialog()
 {
+    if (Console_ptr != NULL)
+    {
+        delete Console_ptr;
+        Console_ptr = NULL;
+    }
     delete ui;
 }
 
@@ -356,16 +366,16 @@ void MainDialog::on_m_pMKSGenButton_clicked()
     int i;
 
     Log = "";
+
     ui->prgBar->setVisible(true);
     ui->prgBar->setValue(0);
 
 
     //**** Verify Integrity is running, MKS Login ****
     // Add Command Log entry
-    Log += "Checking for MKS Integrity Client in Windows Processes";
-    Log += "\n";
-    Log += "-tasklist";
-    Log += "\n";
+    UpdateLog("Checking for MKS Integrity Client in Windows Processes", 0);
+
+    UpdateLog("-tasklist", 1);
     cmdProc.start("tasklist");
     if(!cmdProc.waitForFinished())
     {
@@ -394,8 +404,8 @@ void MainDialog::on_m_pMKSGenButton_clicked()
         if (item.contains("IntegrityClient.exe"))
         {
             // Found the Client running, break the loop
-            Log += item;
-            Log += "\n";
+            UpdateLog("Task Found",1);
+            UpdateLog(item, 2);
             break;
         }
     }
@@ -410,6 +420,7 @@ void MainDialog::on_m_pMKSGenButton_clicked()
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.exec();
 //        qDebug() << Log;
+        UpdateLog(tasks, 2);
         return;
     }
 
@@ -421,11 +432,8 @@ void MainDialog::on_m_pMKSGenButton_clicked()
 
 
 //    qDebug() << cmd;
-    Log += "Verify Root Project Exists";
-    Log += "\n";
-    Log += "-";
-    Log += cmd;
-    Log += "\n";
+    UpdateLog("Verify Root Project Exists", 0);
+    UpdateLog(cmd, 1);
 
     cmdProc.start(cmd);
     if (!cmdProc.waitForFinished())
@@ -446,10 +454,12 @@ void MainDialog::on_m_pMKSGenButton_clicked()
     if (stdOut != "")
     {
 //        qDebug() << "stdOut = " << stdOut;
+        UpdateLog(stdOut, 1);
     }
     else
     {
 //        qDebug() << "stdErr = " << stdErr;
+        UpdateLog(stdErr, 1);
         QMessageBox msgBox;
         msgBox.setWindowTitle("Invalid Root Project");
         msgBox.setText("The Root Project Does not Exist.");
@@ -473,53 +483,8 @@ void MainDialog::on_m_pMKSGenButton_clicked()
     NodesCreated = 0;
     CreateMKSProjects("", tmpNode);
 
-#if 0
-//    qDebug() << "First Node-" << tmpNode->text();
-    Log += "Add First Node";
-    Log += "\n";
-    Log += "-";
-    Log += cmd;
-    Log += "\n";
+    //ui->Commands->setText(Log);
 
-    cmdProc.start(cmd);
-    if (!cmdProc.waitForFinished())
-    {
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("MKS Integrity not running");
-        msgBox.setText("Could not run command lines for MKS integrity.");
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.setDefaultButton(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Warning);
-        msgBox.exec();
-//        qDebug() << Log;
-        return;
-    }
-
-    stdOut = cmdProc.readAllStandardOutput();
-    stdErr = cmdProc.readAllStandardError();
-    if (stdOut != "")
-    {
-//        qDebug() << "stdOut = " << stdOut;
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("Root Project already exists");
-        msgBox.setText("Could not run command lines for MKS integrity.");
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-        msgBox.setDefaultButton(QMessageBox::No);
-        msgBox.setIcon(QMessageBox::Question);
-        if (msgBox.exec() == QMessageBox::No)
-        {
-//            qDebug() << Log;
-            return;
-        }
-
-    }
-    // Project does not exist, so start creating it.
-//    qDebug() << "stdErr = " << stdErr;
-//    tmpNode = StdModel->invisibleRootItem();
-//    nodeText = tmpNode->text();
-    CreateMKSProjects(nodeText, tmpNode);
-
-#endif
 //    qDebug() << Log;
 
 //    qDebug() << Log.size();
@@ -554,12 +519,12 @@ void MainDialog::CreateMKSProjects(QString root, QStandardItem *rootItem)
                 tmpItem->text() + "/project.pj"; //01_From_Customer/project.pj
     }
 
-    Log += "Add Node-";
-    Log += tmpItem->text();
-    Log += "\n";
-    Log += "-";
-    Log += cmd;
-    Log += "\n";
+    UpdateLog("Add Node-", 0);
+    UpdateLog(tmpItem->text(), 1);
+//    UpdateLog("\n");
+//    UpdateLog("-");
+    UpdateLog(cmd, 2);
+//    UpdateLog("\n");
     if (RunMKSCmd(&cmd, &cmdProc))
     {
         exitCode = cmdProc.exitCode();
@@ -571,17 +536,17 @@ void MainDialog::CreateMKSProjects(QString root, QStandardItem *rootItem)
         {
             // Success
 //            qDebug() << "Success" << stdErr;
-            Log += "Success-\n";
-            Log += stdErr;
-            Log += "\n";
+            UpdateLog("Success-\n", 1);
+            UpdateLog(stdErr, 2);
+//            UpdateLog("\n");
         }
         else
         {
             // Fail
 //            qDebug() << "Fail-" << stdErr;
-            Log += "Fail\n";
-            Log += stdErr;
-            Log += "\n";
+            UpdateLog("Fail\n", 1);
+            UpdateLog(stdErr, 2);
+//            UpdateLog("\n");
         }
         if (((NodesCreated * 100) / TotalNodes) > 50)
         {
@@ -602,11 +567,11 @@ void MainDialog::CreateMKSProjects(QString root, QStandardItem *rootItem)
         }
         else
         {
-//            Log += "Add Node";
-//            Log += "\n";
-//            Log += "-";
-//            Log += tmpItem->text();
-//            Log += "\n";
+//            UpdateLog("Add Node");
+//            UpdateLog("\n");
+//            UpdateLog("-");
+//            UpdateLog(tmpItem->text());
+//            UpdateLog("\n");
 //            qDebug() << tmpItem->text();
         }
     }
@@ -665,4 +630,86 @@ void MainDialog::closeEvent(QCloseEvent *event)
     {
         event->accept();
     }
+
+    if (Console_ptr != NULL)
+    {
+        delete Console_ptr;
+        Console_ptr = NULL;
+    }
 }
+
+void MainDialog::on_ConsoleCheck_clicked()
+{
+    if (ui->ConsoleCheck->isChecked())
+    {
+        this->resize(1251, this->size().height());
+ #if 0
+        if (Console_ptr == NULL)
+        {
+            Console_ptr = new IntegrityConsole;
+            Console_ptr->setWindowFlags(Qt::FramelessWindowHint);
+        }
+        Console_ptr->show();
+        QPoint topleft = this->pos();
+        QSize dlgsize = this->size();
+        Console_ptr->move(topleft.x() + dlgsize.width() + 20,topleft.y());
+#endif
+    }
+    else
+    {
+        this->resize(681, this->size().height());
+
+        if (Console_ptr != NULL)
+        {
+            Console_ptr->hide();
+        }
+    }
+}
+
+
+void MainDialog::UpdateLog(QString Str, int tabCnt = 0)
+{
+    if (Console_ptr != NULL)
+    {
+        Console_ptr->AddText(Str, tabCnt);
+    }
+
+    Log += Str;
+    Log += "\n";
+}
+
+static const char * tabs[] =
+{
+    "",
+    "    ",
+    "        ",
+    "            ",
+    "                ",
+    "                    ",
+    "                        ",
+    "                            ",
+    "                                ",
+    "                                    "
+};
+
+void MainDialog::AddText(QString Str, int tabCnt)
+{
+    QString curStr = ui->Commands->toPlainText();
+
+    QRegExp regExp("[\r\n]");
+    QStringList lines;
+    lines = Str.split(regExp,QString::KeepEmptyParts);
+
+    for (int i = 0; i < lines.count(); i++)
+    {
+        QString item = lines.at(i);
+        curStr += tabs[tabCnt];
+        curStr += item;
+        curStr += "\n";
+    }
+
+    ui->Commands->setText(curStr);
+
+//    ui->Commands->setText(ui->Commands->toPlainText() + Str + "\n");
+}
+
