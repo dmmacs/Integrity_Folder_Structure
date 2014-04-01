@@ -16,18 +16,15 @@ TEMPLATE = app
 SOURCES += main.cpp\
         maindialog.cpp \
     mylineeditclass.cpp \
-    help.cpp \
-    integrityconsole.cpp
+    help.cpp
 
 HEADERS  += maindialog.h \
     mylineeditclass.h \
     version.h \
-    help.h \
-    integrityconsole.h
+    help.h
 
 FORMS    += maindialog.ui \
-    help.ui \
-    integrityconsole.ui
+    help.ui
 
 RESOURCES +=
 
