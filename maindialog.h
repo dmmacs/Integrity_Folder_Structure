@@ -57,6 +57,7 @@ private:
     QDir directory;
     bool isDirty;
 
+    void UpdateLog(QString Str);
     void UpdateLog(QString Str, int tabCnt);
     void AddText(QString Str, int tabCnt);
 

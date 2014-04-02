@@ -32,6 +32,9 @@ QString PrgStyleBLKText = "QProgressBar {border: 2px solid grey; border-radius: 
 QString PrgStyleWHTText = "QProgressBar {border: 2px solid grey; border-radius: 5px; text-align: center; color:#FFFFFF;}";
 QString PrgChunkStytle = "QProgressBar::chunk {background-color: #FFC823; width: 10px; margin: 0.5px;}";
 
+static int TotalDirs = 0;
+static int Cnt = 0;
+
 
 MainDialog::MainDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MainDialog)
 {
@@ -77,7 +80,7 @@ MainDialog::MainDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MainDialog
 #else
     ui->mks_portedit->setText(DefMKSPort);
     ui->mks_serveredit->setText(DefMKSHost);
-    ui->changePackageEdit->setText(DefaultCP);
+    ui->changePackageEdit->setCurrentText(DefaultCP);
     ui->m_pMKSGenButton->setEnabled(true);
 #endif
 
@@ -241,8 +244,12 @@ void MainDialog::on_pBSave_clicked()
 
 void MainDialog::on_pB_ReadDirStruct_clicked()
 {
-//    QString sFname = QFileDialog::getOpenFileName(this,tr("Open File"),directory.path(),tr("Files(*.*)"));
-#if 1
+
+    this->setCursor(Qt::WaitCursor);
+    QApplication::processEvents();
+
+    //    QString sFname = QFileDialog::getOpenFileName(this,tr("Open File"),directory.path(),tr("Files(*.*)"));
+#if 0
     directory.setPath("C:/Users/dmmacs/Documents/Qt Projects/tmp_root");
 #endif
     QString sPath = QFileDialog::getExistingDirectory(this,tr("Select Directory"),directory.path());
@@ -253,26 +260,60 @@ void MainDialog::on_pB_ReadDirStruct_clicked()
         xmldoc.clear();
         ui->textEdit->setText("");
 
+        Log = "";
+        UpdateLog("Reading Directory: " + sPath);
+
         directory.setPath(sPath);
+        // Determine Total SubDirs
+        QString cmd = "cmd.exe /c dir /b /s /A D *";
+        QProcess cmdProc;
+        QString stdOut, stdErr;
+
+        directory.setCurrent(sPath);
+
+        UpdateLog(directory.currentPath());
+
+        cmdProc.start(cmd);
+        if(!cmdProc.waitForFinished())
+        {
+            UpdateLog(cmdProc.errorString(),1);
+            UpdateLog("Cound not run dir command to get total Dirs", 1);
+        }
+        stdOut = cmdProc.readAllStandardOutput();
+        stdErr = cmdProc.readAllStandardError();
+        if (stdOut != "")
+        {
+            QStringList outPut;
+            QRegExp regExp("[\r\n]");
+            outPut = stdOut.split(regExp, QString::SkipEmptyParts);
+            TotalDirs = outPut.count();
+            Cnt = 0;
+        }
+        else
+        {
+            UpdateLog("StdErr: " + stdErr, 1);
+        }
         QDir tmp;
         tmp.setPath(sPath);
         QString relPath = tmp.relativeFilePath(sPath);
 
+        UpdateLog("Determine Relative Path: " + relPath);
+        UpdateLog("Create Temporary XML File");
         QString nodeName;
         nodeName = XMLHeader + "\n";
 
         nodeName += "<" + DirTagName + " " + DirAttrName + "=\"" + directory.dirName() + "\" >" + "\n";
 
         ReadDir(sPath, &nodeName);
+
+        // Clean up progress bar to ensure it hits 100% since we are done.
+        ui->prgBar->setValue(100);
         nodeName += "</" + DirTagName + ">" + "\n";
-//        qDebug() << nodeName;
 
         QTemporaryFile file("tempXML",this);
         file.setAutoRemove(false);
 
         file.open();//QIODevice::WriteOnly | QIODevice::Text);
-//        qDebug() << file.fileName();
-
 
         // Store the xml data in a temporary file
         QTextStream tmpStream(&file);
@@ -288,6 +329,7 @@ void MainDialog::on_pB_ReadDirStruct_clicked()
 
     }
 
+    this->setCursor(Qt::ArrowCursor);
 
 }
 
@@ -296,6 +338,7 @@ void MainDialog::ReadDir(QString Path, QString *nodeData)
     QDir dir(Path);
 
     QFileInfoList dirs = dir.entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot);
+
 
     foreach(const QFileInfo &fi, dirs)
     {      //Loops through the found files.
@@ -308,11 +351,14 @@ void MainDialog::ReadDir(QString Path, QString *nodeData)
             *nodeData += "<" + DirTagName + " " + DirAttrName + "=\"" + relPath + "\" >" + "\n";
             ReadDir(sPath, nodeData);
             *nodeData += "</" + DirTagName + ">" + "\n";
-
+            UpdateLog("Adding DIR: " + relPath, 1);
         }
+        Cnt++;
+        ui->prgBar->setValue(Cnt * 100 / TotalDirs);
     }
 
 }
+
 
 void MainDialog::on_lineEdit_selectionChanged()
 {
@@ -664,6 +710,10 @@ void MainDialog::on_ConsoleCheck_clicked()
     }
 }
 
+void MainDialog::UpdateLog(QString Str)
+{
+    UpdateLog(Str, 0);
+}
 
 void MainDialog::UpdateLog(QString Str, int tabCnt = 0)
 {
