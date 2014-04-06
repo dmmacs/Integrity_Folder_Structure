@@ -244,8 +244,8 @@ void MainDialog::on_pBSave_clicked()
 
 void MainDialog::on_pB_ReadDirStruct_clicked()
 {
-
-    this->setCursor(Qt::WaitCursor);
+//    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+//    this->setCursor(Qt::WaitCursor);
     QApplication::processEvents();
 
     //    QString sFname = QFileDialog::getOpenFileName(this,tr("Open File"),directory.path(),tr("Files(*.*)"));
@@ -329,7 +329,7 @@ void MainDialog::on_pB_ReadDirStruct_clicked()
 
     }
 
-    this->setCursor(Qt::ArrowCursor);
+//    this->setCursor(Qt::ArrowCursor);
 
 }
 
@@ -386,7 +386,6 @@ void MainDialog::on_toolButton_clicked()
 {
     QString sFname = QFileDialog::getOpenFileName(this,tr("Open File"),directory.path(),tr("Files(*.*)"));
 
-//    qDebug() << sFname;
     ui->textEdit->setText(sFname);
 
     if (sFname != "")
@@ -399,6 +398,7 @@ void MainDialog::on_toolButton_clicked()
 
 // Create the sturture in MKS
 // 1. Verify MKS Login
+// 2. Verify CP exists
 // 2. Verify structure is not empty
 // 3. Verify base project exists.
 // 4. Create the structure
@@ -418,7 +418,6 @@ void MainDialog::on_m_pMKSGenButton_clicked()
     // Add Command Log entry
     UpdateLog("Checking for MKS Integrity Client in Windows Processes", 0);
 
-    UpdateLog("-tasklist", 1);
     cmdProc.start("tasklist");
     if(!cmdProc.waitForFinished())
     {
@@ -430,7 +429,7 @@ void MainDialog::on_m_pMKSGenButton_clicked()
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.exec();
 
-//    qDebug() << Log;
+        UpdateLog("-tasklist", 1);
         return;
     }
 
@@ -462,20 +461,25 @@ void MainDialog::on_m_pMKSGenButton_clicked()
         msgBox.setDefaultButton(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.exec();
-//        qDebug() << Log;
         UpdateLog(tasks, 2);
         return;
     }
 
     // MKS Integrity is running,
 
+    // Verify CP exists
+    QString cp;
+    cp = ui->changePackageEdit->currentText();
+    if ((cp != ":none") && (cp != ":bypass"))
+    {
+        // Check to see if CP exists
+    }
+
+    UpdateLog("Verify Root Project Exists", 0);
     // Verify the root project exists
     cmd = "si projectinfo --hostname=" + ui->mks_serveredit->text() + " --port=" + ui->mks_portedit->text() + " --project=" + \
             ui->lineEdit->text() + "/project.pj";
 
-
-//    qDebug() << cmd;
-    UpdateLog("Verify Root Project Exists", 0);
     UpdateLog(cmd, 1);
 
     cmdProc.start(cmd);
@@ -488,7 +492,6 @@ void MainDialog::on_m_pMKSGenButton_clicked()
         msgBox.setDefaultButton(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.exec();
-//        qDebug() << Log;
         return;
     }
     QString stdOut, stdErr;
@@ -496,22 +499,72 @@ void MainDialog::on_m_pMKSGenButton_clicked()
     stdErr = cmdProc.readAllStandardError();
     if (stdOut != "")
     {
-//        qDebug() << "stdOut = " << stdOut;
         UpdateLog(stdOut, 1);
     }
     else
     {
-//        qDebug() << "stdErr = " << stdErr;
-        UpdateLog(stdErr, 1);
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("Invalid Root Project");
-        msgBox.setText("The Root Project Does not Exist.");
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.setDefaultButton(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Warning);
-        msgBox.exec();
-//        qDebug() << Log;
-        return;
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "Root Project does not exist, Create?", "Root Project does not exist, Create?");
+        if (reply == QMessageBox::Yes)
+        {
+            QString base = ui->lineEdit->text();
+            QStringList pathParts;
+            pathParts = base.split("/",QString::SkipEmptyParts);
+
+            QString prjpath;
+            QString item;
+
+            for (i = 0; i < pathParts.count() - 1; i++)
+            {
+                item = pathParts.at(i);
+                prjpath += "/";
+                prjpath += item;
+            }
+            item = pathParts.at(pathParts.count() - 1);
+
+            cmd = "si createsubproject --no --hostname=" + ui->mks_serveredit->text() + " --port=" + \
+                    ui->mks_portedit->text() + " --changePackageId=" + ui->changePackageEdit->currentText() + \
+                    " --nocloseCP --project=" + prjpath + "/project.pj " + \
+                    item + "/project.pj"; //01_From_Customer/project.pj
+            UpdateLog("Creat Base Project");
+            UpdateLog(cmd);
+            cmdProc.start(cmd);
+            if (!cmdProc.waitForFinished())
+            {
+                QMessageBox msgBox;
+                msgBox.setWindowTitle("MKS Integrity not running");
+                msgBox.setText("Could not run command lines for MKS integrity.");
+                msgBox.setStandardButtons(QMessageBox::Ok);
+                msgBox.setDefaultButton(QMessageBox::Ok);
+                msgBox.setIcon(QMessageBox::Warning);
+                msgBox.exec();
+                return;
+            }
+            QString stdOut, stdErr;
+            stdOut = cmdProc.readAllStandardOutput();
+            stdErr = cmdProc.readAllStandardError();
+            if (stdOut != "")
+            {
+                UpdateLog(stdOut);
+            }
+            else
+            {
+                UpdateLog(stdErr);
+            }
+
+        }
+        else
+        {
+            UpdateLog(stdErr, 1);
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("Invalid Root Project");
+            msgBox.setText("The Root Project Does not Exist.");
+            msgBox.setStandardButtons(QMessageBox::Ok);
+            msgBox.setDefaultButton(QMessageBox::Ok);
+            msgBox.setIcon(QMessageBox::Warning);
+            msgBox.exec();
+            return;
+        }
     }
 
     // Root Project exists, Check if new structure top-level already exists.
@@ -525,14 +578,6 @@ void MainDialog::on_m_pMKSGenButton_clicked()
 
     NodesCreated = 0;
     CreateMKSProjects("", tmpNode);
-
-    //ui->Commands->setText(Log);
-
-//    qDebug() << Log;
-
-//    qDebug() << Log.size();
-
-
 }
 
 void MainDialog::CreateMKSProjects(QString root, QStandardItem *rootItem)
@@ -542,7 +587,6 @@ void MainDialog::CreateMKSProjects(QString root, QStandardItem *rootItem)
     int i, j = 0;
     QStandardItem *tmpItem;
     tmpItem = rootItem;
-//    qDebug() << "Node-" << tmpItem->text() << "-" << root;
 
     QString cmd;
     QProcess cmdProc;
@@ -564,10 +608,7 @@ void MainDialog::CreateMKSProjects(QString root, QStandardItem *rootItem)
 
     UpdateLog("Add Node-", 0);
     UpdateLog(tmpItem->text(), 1);
-//    UpdateLog("\n");
-//    UpdateLog("-");
     UpdateLog(cmd, 2);
-//    UpdateLog("\n");
     if (RunMKSCmd(&cmd, &cmdProc))
     {
         exitCode = cmdProc.exitCode();
@@ -578,44 +619,25 @@ void MainDialog::CreateMKSProjects(QString root, QStandardItem *rootItem)
         if (exitCode == 0)
         {
             // Success
-//            qDebug() << "Success" << stdErr;
             UpdateLog("Success-\n", 1);
             UpdateLog(stdErr, 2);
-//            UpdateLog("\n");
         }
         else
         {
             // Fail
-//            qDebug() << "Fail-" << stdErr;
             UpdateLog("Fail\n", 1);
             UpdateLog(stdErr, 2);
-//            UpdateLog("\n");
-        }
-        if (((NodesCreated * 100) / TotalNodes) > 50)
-        {
-//            ui->prgBar->setStyleSheet(PrgStyleWHTText + PrgChunkStytle);
         }
         ui->prgBar->setValue((NodesCreated * 100) / TotalNodes);
     }
-    //si createsubproject --no --hostname=%mkshost% --port=%mksport% --changePackageId=%changePackageID% --nocloseCP --project=%project% 01_From_Customer/project.pj
     for (i = 0; i < rootItem->rowCount(); i++)
     {
-//        tmpItem = rootItem->child(i);
         if (tmpItem->hasChildren())
         {
             QStandardItem *childItem;
             childItem = tmpItem->child(j);
             CreateMKSProjects(root + "/" + tmpItem->text(), childItem);
             j++;
-        }
-        else
-        {
-//            UpdateLog("Add Node");
-//            UpdateLog("\n");
-//            UpdateLog("-");
-//            UpdateLog(tmpItem->text());
-//            UpdateLog("\n");
-//            qDebug() << tmpItem->text();
         }
     }
 }
