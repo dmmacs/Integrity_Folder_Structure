@@ -8,6 +8,8 @@
 
 const QString DirTagName = "dir";
 const QString DirAttrName = "name";
+const QString FldrTagName = "Folder_Structure";
+const QString FldrAttrName = "version";
 #ifdef QT_DEBUG
 const QString DefaultPrjName = "/PSE/CoreDev/platform/test1";
 const QString DefaultCP = "5290:35";
@@ -104,7 +106,11 @@ void MainDialog::ParseXMLFile(QString sPath, QDomDocument *xmlDoc)
     }
     else
     {
-        if(!xmlDoc->setContent(&file))
+        QString errorMsg;
+        int errorLine;
+        int errorCol;
+
+        if(!xmlDoc->setContent(&file, &errorMsg, &errorLine, &errorCol))
         {
             qDebug() << "Failed to load document";
             ui->textEdit->setText("Failed to load document");
@@ -118,11 +124,9 @@ void MainDialog::SaveXMLFile(QString sPath, QDomDocument *xmlDoc)
 {
     QFile file(sPath);
 
-//    qDebug() << sPath;
 
     if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-//        qDebug() << "Failed to open file";
         ui->textEdit->setText("Failed to open file");
     }
     else
@@ -130,6 +134,7 @@ void MainDialog::SaveXMLFile(QString sPath, QDomDocument *xmlDoc)
         QTextStream TextStream(&file);
         xmlDoc->save(TextStream,0);
         file.close();
+        isDirty = false;
     }
 }
 
@@ -161,6 +166,7 @@ void MainDialog::ProcessXMLData(QDomElement *rootxml, QStandardItem *rootNode, Q
 
 void MainDialog::LoadXMLData(QString sFname)
 {
+    QString XmlVer;
     // Clear the Tree
     StdModel->clear();
 
@@ -168,8 +174,12 @@ void MainDialog::LoadXMLData(QString sFname)
 
     // Get Root of Tree and XML
     QStandardItem *Node = StdModel->invisibleRootItem();
-    QDomElement root = xmldoc.firstChildElement(DirTagName);
+//    QDomElement root = xmldoc.firstChildElement(DirTagName);
+    QDomElement root = xmldoc.firstChildElement(FldrTagName);
+    XmlVer = root.attribute(FldrAttrName);
 
+    root = root.firstChildElement(DirTagName);
+    qDebug() << root.attribute(DirAttrName);
     // Add the Root node
     TotalNodes = 0;
 
