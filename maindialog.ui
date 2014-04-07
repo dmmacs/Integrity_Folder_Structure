@@ -6,12 +6,16 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>685</width>
-    <height>767</height>
+    <width>1251</width>
+    <height>620</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainDialog</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../../../../Desktop/temp/Trw_logo.png</normaloff>../../../../Desktop/temp/Trw_logo.png</iconset>
   </property>
   <widget class="QTreeView" name="treeView">
    <property name="geometry">
@@ -207,7 +211,49 @@
     <string>Change Package</string>
    </property>
   </widget>
-  <widget class="MyLineEditClass" name="changePackageEdit">
+  <widget class="QTextEdit" name="Commands">
+   <property name="geometry">
+    <rect>
+     <x>680</x>
+     <y>10</y>
+     <width>565</width>
+     <height>601</height>
+    </rect>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_5">
+   <property name="geometry">
+    <rect>
+     <x>450</x>
+     <y>590</y>
+     <width>231</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Version 0.3</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="ConsoleCheck">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>470</x>
+     <y>10</y>
+     <width>121</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Show Console</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="changePackageEdit">
    <property name="geometry">
     <rect>
      <x>450</x>
@@ -216,18 +262,11 @@
      <height>22</height>
     </rect>
    </property>
-   <property name="text">
-    <string/>
+   <property name="editable">
+    <bool>true</bool>
    </property>
-  </widget>
-  <widget class="QTextEdit" name="textEdit_2">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>620</y>
-     <width>431</width>
-     <height>141</height>
-    </rect>
+   <property name="currentText">
+    <string/>
    </property>
   </widget>
  </widget>

@@ -15,11 +15,16 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         maindialog.cpp \
-    mylineeditclass.cpp
+    mylineeditclass.cpp \
+    help.cpp
 
 HEADERS  += maindialog.h \
-    mylineeditclass.h
+    mylineeditclass.h \
+    version.h \
+    help.h
 
-FORMS    += maindialog.ui
+FORMS    += maindialog.ui \
+    help.ui
 
 RESOURCES +=
+

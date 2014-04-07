@@ -12,6 +12,8 @@
 #include <QLineEdit>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QDesktopWidget>
+#include <QKeyEvent>
 
 namespace Ui {
 class MainDialog;
@@ -43,11 +45,23 @@ private slots:
 
     void on_m_pMKSGenButton_clicked();
 
+    void on_ConsoleCheck_clicked();
+
+    void keyPressEvent(QKeyEvent * event);
+
+
 private:
     Ui::MainDialog *ui;
     QStandardItemModel *StdModel;
     QDomDocument xmldoc;
     QDir directory;
+    bool isDirty;
+
+    void UpdateLog(QString Str);
+    void UpdateLog(QString Str, int tabCnt);
+    void AddText(QString Str, int tabCnt);
+
+    void closeEvent(QCloseEvent *event);
 
     void ParseXMLFile(QString sPath, QDomDocument *xmlDoc);
     void SaveXMLFile(QString sPath, QDomDocument *xmlDoc);

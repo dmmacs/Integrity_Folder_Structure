@@ -3,16 +3,19 @@
 
 #include "mksfoldertemplate.h"
 #include "windows.h"
+#include "version.h"
 
 
 const QString DirTagName = "dir";
 const QString DirAttrName = "name";
+const QString FldrTagName = "Folder_Structure";
+const QString FldrAttrName = "version";
 #ifdef QT_DEBUG
 const QString DefaultPrjName = "/PSE/CoreDev/platform/test1";
 const QString DefaultCP = "5290:35";
 #else
 const QString DefaultPrjName = "i.e. /PSE/AECU/CoreDev/platform";
-const QString DefaultCP = "none";
+const QString DefaultCP = ":none";
 #endif
 const QString MKShost = "--hostname=skobde-mks.kobde.trw.com";
 const QString MKSport = "--port=7001";
@@ -29,8 +32,10 @@ int TotalNodes = 0;
 int NodesCreated = 0;
 QString PrgStyleBLKText = "QProgressBar {border: 2px solid grey; border-radius: 5px; text-align: center; color:#000000;}";
 QString PrgStyleWHTText = "QProgressBar {border: 2px solid grey; border-radius: 5px; text-align: center; color:#FFFFFF;}";
-//QString PrgChunkStytle = "QProgressBar::chunk {background-color: #CD96CD; width: 10px; margin: 0.5px;}";
 QString PrgChunkStytle = "QProgressBar::chunk {background-color: #FFC823; width: 10px; margin: 0.5px;}";
+
+static int TotalDirs = 0;
+static int Cnt = 0;
 
 
 MainDialog::MainDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MainDialog)
@@ -52,24 +57,36 @@ MainDialog::MainDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MainDialog
     ui->lineEdit->setText(DefaultPrjName);
     ui->lineEdit->selectAll();
 
+    // Version Text
+    ui->label_5->setVisible(true);
+    ui->label_5->setText("Version: " + QString::number(Version::MAJOR) + "." + QString::number(Version::MINOR) + "." + QString::number(Version::BUILD));
 
+
+    isDirty = false;
+
+//    QPoint loc = this->pos();
+    //this->move(0,this->pos().y());
+
+    ui->changePackageEdit->addItem(":none");
+    ui->changePackageEdit->addItem(":bypass");
 
 #ifdef QT_DEBUG
     ui->mks_portedit->setText("7001");
     ui->mks_serveredit->setText("skobde-mkstest.kobde.trw.com");
-    ui->changePackageEdit->setText(DefaultCP);
+    ui->changePackageEdit->setCurrentText(DefaultCP);
 
-    ui->textEdit->setText("C:/Users/mcdonaldd/Documents/Qt/Projects/tmp.xml");
+    ui->textEdit->setText("C:/Users/mcdonaldd/Documents/Qt/Projects/MKS_Folder_Structure/tmp.xml");
     LoadXMLData(ui->textEdit->text());
     ui->m_pMKSGenButton->setEnabled(true);
-
 
 #else
     ui->mks_portedit->setText(DefMKSPort);
     ui->mks_serveredit->setText(DefMKSHost);
-    ui->changePackageEdit->setText(DefaultCP);
+    ui->changePackageEdit->setCurrentText(DefaultCP);
     ui->m_pMKSGenButton->setEnabled(true);
 #endif
+
+
 
 }
 
@@ -89,7 +106,11 @@ void MainDialog::ParseXMLFile(QString sPath, QDomDocument *xmlDoc)
     }
     else
     {
-        if(!xmlDoc->setContent(&file))
+        QString errorMsg;
+        int errorLine;
+        int errorCol;
+
+        if(!xmlDoc->setContent(&file, &errorMsg, &errorLine, &errorCol))
         {
             qDebug() << "Failed to load document";
             ui->textEdit->setText("Failed to load document");
@@ -103,11 +124,9 @@ void MainDialog::SaveXMLFile(QString sPath, QDomDocument *xmlDoc)
 {
     QFile file(sPath);
 
-    qDebug() << sPath;
 
     if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Failed to open file";
         ui->textEdit->setText("Failed to open file");
     }
     else
@@ -115,6 +134,7 @@ void MainDialog::SaveXMLFile(QString sPath, QDomDocument *xmlDoc)
         QTextStream TextStream(&file);
         xmlDoc->save(TextStream,0);
         file.close();
+        isDirty = false;
     }
 }
 
@@ -146,6 +166,7 @@ void MainDialog::ProcessXMLData(QDomElement *rootxml, QStandardItem *rootNode, Q
 
 void MainDialog::LoadXMLData(QString sFname)
 {
+    QString XmlVer;
     // Clear the Tree
     StdModel->clear();
 
@@ -153,10 +174,13 @@ void MainDialog::LoadXMLData(QString sFname)
 
     // Get Root of Tree and XML
     QStandardItem *Node = StdModel->invisibleRootItem();
-    QDomElement root = xmldoc.firstChildElement(DirTagName);
+//    QDomElement root = xmldoc.firstChildElement(DirTagName);
+    QDomElement root = xmldoc.firstChildElement(FldrTagName);
+    XmlVer = root.attribute(FldrAttrName);
 
+    root = root.firstChildElement(DirTagName);
+    qDebug() << root.attribute(DirAttrName);
     // Add the Root node
-//    qDebug() << root.attribute(DirAttrName);
     TotalNodes = 0;
 
     // Add the node
@@ -172,36 +196,70 @@ void MainDialog::LoadXMLData(QString sFname)
     ui->treeView->expandAll();
 
     NodesCreated = 0;
-    qDebug() << TotalNodes;
+//    qDebug() << TotalNodes;
 }
 
 void MainDialog::on_pBLoad_clicked()
 {
-    if (ui->lineEdit->text() != "")
+    if (ui->textEdit->text() != "")
     {
-        LoadXMLData(ui->lineEdit->text());
+//        qDebug() << ui->textEdit->text();
+
+        LoadXMLData(ui->textEdit->text());
     }
 
 }
 
 void MainDialog::on_pBSave_clicked()
 {
-    if (ui->lineEdit->text() != "")
+    bool overwrite = false;
+    if (ui->textEdit->text() != "")
     {
-        SaveXMLFile(ui->lineEdit->text(), &xmldoc);
+        QFile Fout;//("ui->textEdit->text()");
+        qDebug() << ui->textEdit->text();
+        if (Fout.exists(ui->textEdit->text()))
+        {
+            QMessageBox::StandardButton reply;
+            reply = QMessageBox::question(this, "Overwrite File?", "Overwrite?");
+            if (reply == QMessageBox::Yes)
+            {
+                overwrite = true;
+            }
+//            msgBox.setWindowTitle("Overwrite File?");
+//            msgBox.setText("Overwrite File?");
+//            msgBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No);
+//            msgBox.setDefaultButton(QMessageBox::Yes);
+//            msgBox.setIcon(QMessageBox::Warning);
+
+        }
+        else
+        {
+            overwrite = true;
+        }
+        if (overwrite == true)
+        {
+            SaveXMLFile(ui->textEdit->text(), &xmldoc);
+            isDirty = false;
+        }
     }
-    else
+
+
+    if (overwrite == false)
     {
         QString sfname = QFileDialog::getSaveFileName(this, tr("Enter FileName"),directory.path());
         ui->textEdit->setText(sfname);
-        SaveXMLFile(ui->lineEdit->text(), &xmldoc);
+        SaveXMLFile(sfname, &xmldoc);
     }
 }
 
 void MainDialog::on_pB_ReadDirStruct_clicked()
 {
-//    QString sFname = QFileDialog::getOpenFileName(this,tr("Open File"),directory.path(),tr("Files(*.*)"));
-#if 1
+//    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+//    this->setCursor(Qt::WaitCursor);
+    QApplication::processEvents();
+
+    //    QString sFname = QFileDialog::getOpenFileName(this,tr("Open File"),directory.path(),tr("Files(*.*)"));
+#if 0
     directory.setPath("C:/Users/dmmacs/Documents/Qt Projects/tmp_root");
 #endif
     QString sPath = QFileDialog::getExistingDirectory(this,tr("Select Directory"),directory.path());
@@ -210,27 +268,62 @@ void MainDialog::on_pB_ReadDirStruct_clicked()
     {
         StdModel->clear();
         xmldoc.clear();
+        ui->textEdit->setText("");
+
+        Log = "";
+        UpdateLog("Reading Directory: " + sPath);
 
         directory.setPath(sPath);
+        // Determine Total SubDirs
+        QString cmd = "cmd.exe /c dir /b /s /A D *";
+        QProcess cmdProc;
+        QString stdOut, stdErr;
+
+        directory.setCurrent(sPath);
+
+        UpdateLog(directory.currentPath());
+
+        cmdProc.start(cmd);
+        if(!cmdProc.waitForFinished())
+        {
+            UpdateLog(cmdProc.errorString(),1);
+            UpdateLog("Cound not run dir command to get total Dirs", 1);
+        }
+        stdOut = cmdProc.readAllStandardOutput();
+        stdErr = cmdProc.readAllStandardError();
+        if (stdOut != "")
+        {
+            QStringList outPut;
+            QRegExp regExp("[\r\n]");
+            outPut = stdOut.split(regExp, QString::SkipEmptyParts);
+            TotalDirs = outPut.count();
+            Cnt = 0;
+        }
+        else
+        {
+            UpdateLog("StdErr: " + stdErr, 1);
+        }
         QDir tmp;
         tmp.setPath(sPath);
         QString relPath = tmp.relativeFilePath(sPath);
 
+        UpdateLog("Determine Relative Path: " + relPath);
+        UpdateLog("Create Temporary XML File");
         QString nodeName;
         nodeName = XMLHeader + "\n";
 
         nodeName += "<" + DirTagName + " " + DirAttrName + "=\"" + directory.dirName() + "\" >" + "\n";
 
         ReadDir(sPath, &nodeName);
+
+        // Clean up progress bar to ensure it hits 100% since we are done.
+        ui->prgBar->setValue(100);
         nodeName += "</" + DirTagName + ">" + "\n";
-        qDebug() << nodeName;
 
         QTemporaryFile file("tempXML",this);
         file.setAutoRemove(false);
 
         file.open();//QIODevice::WriteOnly | QIODevice::Text);
-        qDebug() << file.fileName();
-
 
         // Store the xml data in a temporary file
         QTextStream tmpStream(&file);
@@ -241,8 +334,12 @@ void MainDialog::on_pB_ReadDirStruct_clicked()
 
         file.remove();
 
+        ui->textEdit->setText("");
+        isDirty = true;
+
     }
 
+//    this->setCursor(Qt::ArrowCursor);
 
 }
 
@@ -251,6 +348,7 @@ void MainDialog::ReadDir(QString Path, QString *nodeData)
     QDir dir(Path);
 
     QFileInfoList dirs = dir.entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot);
+
 
     foreach(const QFileInfo &fi, dirs)
     {      //Loops through the found files.
@@ -263,11 +361,14 @@ void MainDialog::ReadDir(QString Path, QString *nodeData)
             *nodeData += "<" + DirTagName + " " + DirAttrName + "=\"" + relPath + "\" >" + "\n";
             ReadDir(sPath, nodeData);
             *nodeData += "</" + DirTagName + ">" + "\n";
-
+            UpdateLog("Adding DIR: " + relPath, 1);
         }
+        Cnt++;
+        ui->prgBar->setValue(Cnt * 100 / TotalDirs);
     }
 
 }
+
 
 void MainDialog::on_lineEdit_selectionChanged()
 {
@@ -295,7 +396,6 @@ void MainDialog::on_toolButton_clicked()
 {
     QString sFname = QFileDialog::getOpenFileName(this,tr("Open File"),directory.path(),tr("Files(*.*)"));
 
-    qDebug() << sFname;
     ui->textEdit->setText(sFname);
 
     if (sFname != "")
@@ -308,6 +408,7 @@ void MainDialog::on_toolButton_clicked()
 
 // Create the sturture in MKS
 // 1. Verify MKS Login
+// 2. Verify CP exists
 // 2. Verify structure is not empty
 // 3. Verify base project exists.
 // 4. Create the structure
@@ -318,16 +419,15 @@ void MainDialog::on_m_pMKSGenButton_clicked()
     int i;
 
     Log = "";
+
     ui->prgBar->setVisible(true);
     ui->prgBar->setValue(0);
 
 
     //**** Verify Integrity is running, MKS Login ****
     // Add Command Log entry
-    Log += "Checking for MKS Integrity Client in Windows Processes";
-    Log += "\n";
-    Log += "-tasklist";
-    Log += "\n";
+    UpdateLog("Checking for MKS Integrity Client in Windows Processes", 0);
+
     cmdProc.start("tasklist");
     if(!cmdProc.waitForFinished())
     {
@@ -339,7 +439,7 @@ void MainDialog::on_m_pMKSGenButton_clicked()
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.exec();
 
-    qDebug() << Log;
+        UpdateLog("-tasklist", 1);
         return;
     }
 
@@ -356,9 +456,8 @@ void MainDialog::on_m_pMKSGenButton_clicked()
         if (item.contains("IntegrityClient.exe"))
         {
             // Found the Client running, break the loop
-            Log += item;
-            Log += "\n";
-//            qDebug() << item;
+            UpdateLog("Task Found",1);
+            UpdateLog(item, 2);
             break;
         }
     }
@@ -372,23 +471,26 @@ void MainDialog::on_m_pMKSGenButton_clicked()
         msgBox.setDefaultButton(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.exec();
-        qDebug() << Log;
+        UpdateLog(tasks, 2);
         return;
     }
 
-    // MKS Integrity is running, start building commandlines and run
+    // MKS Integrity is running,
 
+    // Verify CP exists
+    QString cp;
+    cp = ui->changePackageEdit->currentText();
+    if ((cp != ":none") && (cp != ":bypass"))
+    {
+        // Check to see if CP exists
+    }
+
+    UpdateLog("Verify Root Project Exists", 0);
     // Verify the root project exists
     cmd = "si projectinfo --hostname=" + ui->mks_serveredit->text() + " --port=" + ui->mks_portedit->text() + " --project=" + \
             ui->lineEdit->text() + "/project.pj";
 
-
-//    qDebug() << cmd;
-    Log += "Verify Root Project Exists";
-    Log += "\n";
-    Log += "-";
-    Log += cmd;
-    Log += "\n";
+    UpdateLog(cmd, 1);
 
     cmdProc.start(cmd);
     if (!cmdProc.waitForFinished())
@@ -400,7 +502,6 @@ void MainDialog::on_m_pMKSGenButton_clicked()
         msgBox.setDefaultButton(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.exec();
-        qDebug() << Log;
         return;
     }
     QString stdOut, stdErr;
@@ -408,20 +509,72 @@ void MainDialog::on_m_pMKSGenButton_clicked()
     stdErr = cmdProc.readAllStandardError();
     if (stdOut != "")
     {
-//        qDebug() << "stdOut = " << stdOut;
+        UpdateLog(stdOut, 1);
     }
     else
     {
-//        qDebug() << "stdErr = " << stdErr;
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("Invalid Root Project");
-        msgBox.setText("The Root Project Does not Exist.");
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.setDefaultButton(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Warning);
-        msgBox.exec();
-        qDebug() << Log;
-        return;
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "Root Project does not exist, Create?", "Root Project does not exist, Create?");
+        if (reply == QMessageBox::Yes)
+        {
+            QString base = ui->lineEdit->text();
+            QStringList pathParts;
+            pathParts = base.split("/",QString::SkipEmptyParts);
+
+            QString prjpath;
+            QString item;
+
+            for (i = 0; i < pathParts.count() - 1; i++)
+            {
+                item = pathParts.at(i);
+                prjpath += "/";
+                prjpath += item;
+            }
+            item = pathParts.at(pathParts.count() - 1);
+
+            cmd = "si createsubproject --no --hostname=" + ui->mks_serveredit->text() + " --port=" + \
+                    ui->mks_portedit->text() + " --changePackageId=" + ui->changePackageEdit->currentText() + \
+                    " --nocloseCP --project=" + prjpath + "/project.pj " + \
+                    item + "/project.pj"; //01_From_Customer/project.pj
+            UpdateLog("Creat Base Project");
+            UpdateLog(cmd);
+            cmdProc.start(cmd);
+            if (!cmdProc.waitForFinished())
+            {
+                QMessageBox msgBox;
+                msgBox.setWindowTitle("MKS Integrity not running");
+                msgBox.setText("Could not run command lines for MKS integrity.");
+                msgBox.setStandardButtons(QMessageBox::Ok);
+                msgBox.setDefaultButton(QMessageBox::Ok);
+                msgBox.setIcon(QMessageBox::Warning);
+                msgBox.exec();
+                return;
+            }
+            QString stdOut, stdErr;
+            stdOut = cmdProc.readAllStandardOutput();
+            stdErr = cmdProc.readAllStandardError();
+            if (stdOut != "")
+            {
+                UpdateLog(stdOut);
+            }
+            else
+            {
+                UpdateLog(stdErr);
+            }
+
+        }
+        else
+        {
+            UpdateLog(stdErr, 1);
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("Invalid Root Project");
+            msgBox.setText("The Root Project Does not Exist.");
+            msgBox.setStandardButtons(QMessageBox::Ok);
+            msgBox.setDefaultButton(QMessageBox::Ok);
+            msgBox.setIcon(QMessageBox::Warning);
+            msgBox.exec();
+            return;
+        }
     }
 
     // Root Project exists, Check if new structure top-level already exists.
@@ -431,63 +584,10 @@ void MainDialog::on_m_pMKSGenButton_clicked()
     tmpNode = tmpNode->child(0);
     nodeText = tmpNode->text();
     cmd = "si createsubproject --no --hostname=" + ui->mks_serveredit->text() + " --port=" + ui->mks_portedit->text() + " --changePackageId=" +\
-            ui->changePackageEdit->text() + " --nocloseCP --project=" + ui->lineEdit->text() + "/project.pj " + tmpNode->text() + "/project.pj"; //01_From_Customer/project.pj
+            ui->changePackageEdit->currentText() + " --nocloseCP --project=" + ui->lineEdit->text() + "/project.pj " + tmpNode->text() + "/project.pj"; //01_From_Customer/project.pj
 
     NodesCreated = 0;
     CreateMKSProjects("", tmpNode);
-
-#if 0
-//    qDebug() << "First Node-" << tmpNode->text();
-    Log += "Add First Node";
-    Log += "\n";
-    Log += "-";
-    Log += cmd;
-    Log += "\n";
-
-    cmdProc.start(cmd);
-    if (!cmdProc.waitForFinished())
-    {
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("MKS Integrity not running");
-        msgBox.setText("Could not run command lines for MKS integrity.");
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.setDefaultButton(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Warning);
-        msgBox.exec();
-        qDebug() << Log;
-        return;
-    }
-
-    stdOut = cmdProc.readAllStandardOutput();
-    stdErr = cmdProc.readAllStandardError();
-    if (stdOut != "")
-    {
-//        qDebug() << "stdOut = " << stdOut;
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("Root Project already exists");
-        msgBox.setText("Could not run command lines for MKS integrity.");
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-        msgBox.setDefaultButton(QMessageBox::No);
-        msgBox.setIcon(QMessageBox::Question);
-        if (msgBox.exec() == QMessageBox::No)
-        {
-            qDebug() << Log;
-            return;
-        }
-
-    }
-    // Project does not exist, so start creating it.
-//    qDebug() << "stdErr = " << stdErr;
-//    tmpNode = StdModel->invisibleRootItem();
-//    nodeText = tmpNode->text();
-    CreateMKSProjects(nodeText, tmpNode);
-
-#endif
-    qDebug() << Log;
-
-    qDebug() << Log.size();
-
-
 }
 
 void MainDialog::CreateMKSProjects(QString root, QStandardItem *rootItem)
@@ -497,7 +597,6 @@ void MainDialog::CreateMKSProjects(QString root, QStandardItem *rootItem)
     int i, j = 0;
     QStandardItem *tmpItem;
     tmpItem = rootItem;
-//    qDebug() << "Node-" << tmpItem->text() << "-" << root;
 
     QString cmd;
     QProcess cmdProc;
@@ -505,24 +604,21 @@ void MainDialog::CreateMKSProjects(QString root, QStandardItem *rootItem)
     if (root != "")
     {
         cmd = "si createsubproject --no --hostname=" + ui->mks_serveredit->text() + " --port=" + \
-                ui->mks_portedit->text() + " --changePackageId=" + ui->changePackageEdit->text() + \
+                ui->mks_portedit->text() + " --changePackageId=" + ui->changePackageEdit->currentText() + \
                 " --nocloseCP --project=" + ui->lineEdit->text() + root + "/project.pj " + \
                 tmpItem->text() + "/project.pj"; //01_From_Customer/project.pj
     }
     else
     {
         cmd = "si createsubproject --no --hostname=" + ui->mks_serveredit->text() + " --port=" + \
-                ui->mks_portedit->text() + " --changePackageId=" + ui->changePackageEdit->text() + \
+                ui->mks_portedit->text() + " --changePackageId=" + ui->changePackageEdit->currentText() + \
                 " --nocloseCP --project=" + ui->lineEdit->text() + "/project.pj " + \
                 tmpItem->text() + "/project.pj"; //01_From_Customer/project.pj
     }
 
-    Log += "Add Node-";
-    Log += tmpItem->text();
-    Log += "\n";
-    Log += "-";
-    Log += cmd;
-    Log += "\n";
+    UpdateLog("Add Node-", 0);
+    UpdateLog(tmpItem->text(), 1);
+    UpdateLog(cmd, 2);
     if (RunMKSCmd(&cmd, &cmdProc))
     {
         exitCode = cmdProc.exitCode();
@@ -533,44 +629,25 @@ void MainDialog::CreateMKSProjects(QString root, QStandardItem *rootItem)
         if (exitCode == 0)
         {
             // Success
-//            qDebug() << "Success" << stdErr;
-            Log += "Success-\n";
-            Log += stdErr;
-            Log += "\n";
+            UpdateLog("Success-\n", 1);
+            UpdateLog(stdErr, 2);
         }
         else
         {
             // Fail
-//            qDebug() << "Fail-" << stdErr;
-            Log += "Fail\n";
-            Log += stdErr;
-            Log += "\n";
-        }
-        if (((NodesCreated * 100) / TotalNodes) > 50)
-        {
-//            ui->prgBar->setStyleSheet(PrgStyleWHTText + PrgChunkStytle);
+            UpdateLog("Fail\n", 1);
+            UpdateLog(stdErr, 2);
         }
         ui->prgBar->setValue((NodesCreated * 100) / TotalNodes);
     }
-    //si createsubproject --no --hostname=%mkshost% --port=%mksport% --changePackageId=%changePackageID% --nocloseCP --project=%project% 01_From_Customer/project.pj
     for (i = 0; i < rootItem->rowCount(); i++)
     {
-//        tmpItem = rootItem->child(i);
         if (tmpItem->hasChildren())
         {
             QStandardItem *childItem;
             childItem = tmpItem->child(j);
             CreateMKSProjects(root + "/" + tmpItem->text(), childItem);
             j++;
-        }
-        else
-        {
-//            Log += "Add Node";
-//            Log += "\n";
-//            Log += "-";
-//            Log += tmpItem->text();
-//            Log += "\n";
-//            qDebug() << tmpItem->text();
         }
     }
 }
@@ -600,3 +677,124 @@ boolean MainDialog::RunMKSCmd(QString *cmd, QProcess *proc)
 
 }
 
+void MainDialog::closeEvent(QCloseEvent *event)
+{
+    bool saveFile = false;
+
+    if (isDirty)
+    {
+        //Messagebox to save
+        QMessageBox::StandardButton reply;
+
+        if (ui->textEdit->text() != "")
+        {
+            reply = QMessageBox::question(this, "Overwrite File?", "Overwrite?");
+            if (reply == QMessageBox::Yes)
+            {
+                saveFile = true;
+            }
+        }
+        else
+        {
+            reply = QMessageBox::question(this, "Save Directory Strcutre to XML?","Save Directory Strcutre to XML?");
+            if (reply == QMessageBox::Yes)
+            {
+                saveFile = true;
+            }
+        }
+
+        if (saveFile == true)
+        {
+            on_pBSave_clicked();
+            if (isDirty == true)
+            {
+                // User Saved file, we are done.
+                event->ignore();
+            }
+            else
+            {
+                // User clicked on Cancel, stay here.
+                event->accept();
+            }
+        }
+        else
+        {
+            event->accept();
+        }
+    }
+    else
+    {
+        event->accept();
+    }
+
+}
+
+void MainDialog::on_ConsoleCheck_clicked()
+{
+    if (ui->ConsoleCheck->isChecked())
+    {
+        this->resize(1251, this->size().height());
+    }
+    else
+    {
+        this->resize(681, this->size().height());
+
+    }
+}
+
+void MainDialog::UpdateLog(QString Str)
+{
+    UpdateLog(Str, 0);
+}
+
+void MainDialog::UpdateLog(QString Str, int tabCnt = 0)
+{
+    AddText(Str, tabCnt);
+    Log += Str;
+    Log += "\n";
+}
+
+static const char * tabs[] =
+{
+    "",
+    "    ",
+    "        ",
+    "            ",
+    "                ",
+    "                    ",
+    "                        ",
+    "                            ",
+    "                                ",
+    "                                    "
+};
+
+void MainDialog::AddText(QString Str, int tabCnt)
+{
+    QString curStr = ui->Commands->toPlainText();
+
+    QRegExp regExp("[\r\n]");
+    QStringList lines;
+    lines = Str.split(regExp,QString::KeepEmptyParts);
+
+    for (int i = 0; i < lines.count(); i++)
+    {
+        QString item = lines.at(i);
+        curStr += tabs[tabCnt];
+        curStr += item;
+        curStr += "\n";
+    }
+
+    ui->Commands->setText(curStr);
+
+//    ui->Commands->setText(ui->Commands->toPlainText() + Str + "\n");
+}
+
+
+void MainDialog::keyPressEvent(QKeyEvent * event)
+{
+    if(event->key() == Qt::Key_Escape)
+    {
+        this->close();
+    }
+
+}
