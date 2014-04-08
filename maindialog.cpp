@@ -40,6 +40,7 @@ static int Cnt = 0;
 
 MainDialog::MainDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MainDialog)
 {
+    QCoreApplication::setApplicationVersion(APP_VERSION);
     ui->setupUi(this);
 
     StdModel = new QStandardItemModel(this);
@@ -59,7 +60,8 @@ MainDialog::MainDialog(QWidget *parent) : QDialog(parent), ui(new Ui::MainDialog
 
     // Version Text
     ui->label_5->setVisible(true);
-    ui->label_5->setText("Version: " + QString::number(Version::MAJOR) + "." + QString::number(Version::MINOR) + "." + QString::number(Version::BUILD));
+    ui->label_5->setText("Version:" + QCoreApplication::applicationVersion());
+//    ui->label_5->setText("Version: " + QString::number(Version::MAJOR) + "." + QString::number(Version::MINOR) + "." + QString::number(Version::BUILD));
 
 
     isDirty = false;
@@ -179,7 +181,6 @@ void MainDialog::LoadXMLData(QString sFname)
     XmlVer = root.attribute(FldrAttrName);
 
     root = root.firstChildElement(DirTagName);
-    qDebug() << root.attribute(DirAttrName);
     // Add the Root node
     TotalNodes = 0;
 
