@@ -9,7 +9,7 @@ QT       += xml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = MKS_Folder_Structure
+TARGET = Integrity_Folder_Structure
 TEMPLATE = app
 
 
@@ -27,4 +27,6 @@ FORMS    += maindialog.ui \
     help.ui
 
 RESOURCES +=
+
+include(version.pro)
 
