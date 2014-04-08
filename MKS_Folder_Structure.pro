@@ -30,3 +30,4 @@ RESOURCES +=
 
 include(version.pro)
 
+DEFINES += APP_VERSION=\\\"$$VERSION\\\"
