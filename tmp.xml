@@ -1,11 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
-<dir name="tmp_root">
-<dir name="tmp1">
-<dir name="tmp11"/>
-<dir name="tmp12"/>
-</dir>
-<dir name="tmp2">
-<dir name="tmp21"/>
-<dir name="tmp22"/>
-</dir>
-</dir>
+<Folder_Structure version="1.0">
+	<dir name="tmp_root">
+		<dir name="tmp1">
+			<dir name="tmp11"/>
+			<dir name="tmp12"/>
+		</dir>
+		<dir name="tmp2">
+			<dir name="tmp21"/>
+			<dir name="tmp22"/>
+			<dir name="1.0" />
+		</dir>
+	</dir>
+</Folder_Structure>
