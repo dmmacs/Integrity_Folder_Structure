@@ -36,7 +36,7 @@ public:
     QPushButton *pBSave;
     QPushButton *pB_ReadDirStruct;
     QProgressBar *prgBar;
-    MyLineEditClass *lineEdit;
+    QLineEdit *lineEdit;
     QLineEdit *textEdit;
     QLabel *label;
     QPushButton *m_pMKSGenButton;
@@ -50,6 +50,11 @@ public:
     QLabel *label_5;
     QCheckBox *ConsoleCheck;
     QComboBox *changePackageEdit;
+    QToolButton *Help_Btn;
+    QLabel *label_6;
+    QLineEdit *line_customer;
+    QLineEdit *line_customer_project;
+    QLabel *label_7;
 
     void setupUi(QDialog *MainDialog)
     {
@@ -75,7 +80,7 @@ public:
         prgBar->setObjectName(QStringLiteral("prgBar"));
         prgBar->setGeometry(QRect(10, 590, 431, 23));
         prgBar->setValue(24);
-        lineEdit = new MyLineEditClass(MainDialog);
+        lineEdit = new QLineEdit(MainDialog);
         lineEdit->setObjectName(QStringLiteral("lineEdit"));
         lineEdit->setGeometry(QRect(450, 230, 221, 22));
         textEdit = new QLineEdit(MainDialog);
@@ -86,7 +91,7 @@ public:
         label->setGeometry(QRect(450, 210, 221, 16));
         m_pMKSGenButton = new QPushButton(MainDialog);
         m_pMKSGenButton->setObjectName(QStringLiteral("m_pMKSGenButton"));
-        m_pMKSGenButton->setGeometry(QRect(460, 270, 93, 28));
+        m_pMKSGenButton->setGeometry(QRect(500, 380, 93, 28));
         QFont font;
         font.setPointSize(6);
         m_pMKSGenButton->setFont(font);
@@ -123,6 +128,21 @@ public:
         changePackageEdit->setObjectName(QStringLiteral("changePackageEdit"));
         changePackageEdit->setGeometry(QRect(450, 160, 221, 22));
         changePackageEdit->setEditable(true);
+        Help_Btn = new QToolButton(MainDialog);
+        Help_Btn->setObjectName(QStringLiteral("Help_Btn"));
+        Help_Btn->setGeometry(QRect(450, 560, 41, 22));
+        label_6 = new QLabel(MainDialog);
+        label_6->setObjectName(QStringLiteral("label_6"));
+        label_6->setGeometry(QRect(450, 260, 221, 16));
+        line_customer = new QLineEdit(MainDialog);
+        line_customer->setObjectName(QStringLiteral("line_customer"));
+        line_customer->setGeometry(QRect(450, 280, 221, 22));
+        line_customer_project = new QLineEdit(MainDialog);
+        line_customer_project->setObjectName(QStringLiteral("line_customer_project"));
+        line_customer_project->setGeometry(QRect(450, 330, 221, 22));
+        label_7 = new QLabel(MainDialog);
+        label_7->setObjectName(QStringLiteral("label_7"));
+        label_7->setGeometry(QRect(450, 310, 221, 16));
         QWidget::setTabOrder(treeView, pBLoad);
         QWidget::setTabOrder(pBLoad, pBSave);
 
@@ -149,6 +169,11 @@ public:
         label_5->setText(QApplication::translate("MainDialog", "Version 0.3", 0));
         ConsoleCheck->setText(QApplication::translate("MainDialog", "Show Console", 0));
         changePackageEdit->setCurrentText(QString());
+        Help_Btn->setText(QApplication::translate("MainDialog", "Help", 0));
+        label_6->setText(QApplication::translate("MainDialog", "Customer", 0));
+        line_customer->setText(QString());
+        line_customer_project->setText(QString());
+        label_7->setText(QApplication::translate("MainDialog", "Customer Project", 0));
     } // retranslateUi
 
 };

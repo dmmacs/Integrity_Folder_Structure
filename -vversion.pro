@@ -1,4 +1,4 @@
-VERSION = 1.0.15.0
+VERSION = 1.0.0.2
 QMAKE_TARGET_COMPANY = TRW
 QMAKE_TARGET_PRODUCT = Integrity_Folder_Structure
 QMAKE_TARGET_DESCRIPTION = Integrity Folder Structure

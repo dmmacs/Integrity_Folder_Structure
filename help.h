@@ -15,6 +15,15 @@ public:
     explicit Help(QWidget *parent = 0);
     ~Help();
 
+    QString XML_help;
+    QString Read_DIR_Help;
+    QString Integrity_Help;
+
+private slots:
+    void on_xml_checkBox_clicked();
+
+    void on_xml_RadioBtn_clicked();
+
 private:
     Ui::Help *ui;
 };

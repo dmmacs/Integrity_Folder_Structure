@@ -1,0 +1,279 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<Folder_Structure version="1.0">
+<dir name="PSE_STD">
+<dir name="01_From_Customer">
+<dir name="01_Requirements"/>
+<dir name="02_Tasks_Open_Points"/>
+<dir name="03_Tools_Templates"/>
+<dir name="04_Software_Modules"/>
+<dir name="05_Administration"/>
+</dir>
+<dir name="02_Project_Management">
+<dir name="01_Planning"/>
+<dir name="02_Reporting">
+<dir name="01_Internal"/>
+</dir>
+<dir name="03_Meeting_Minutes">
+<dir name="01_Internal"/>
+<dir name="02_External"/>
+</dir>
+<dir name="04_Correspondence">
+<dir name="01_Internal"/>
+<dir name="02_External"/>
+</dir>
+<dir name="05_GDPIM_Reviews"/>
+<dir name="06_Financials">
+<dir name="01_Quote"/>
+<dir name="02_CQA"/>
+<dir name="03_PWA"/>
+<dir name="04_Budget"/>
+<dir name="05_BOM"/>
+</dir>
+<dir name="07_Presentations">
+<dir name="01_Internal"/>
+<dir name="02_External"/>
+</dir>
+<dir name="08_Delivery">
+<dir name="01_Software"/>
+<dir name="02_ECU"/>
+<dir name="03_Config"/>
+</dir>
+<dir name="09_C40"/>
+<dir name="10_Organisation"/>
+<dir name="11_Risk_Management"/>
+</dir>
+<dir name="03_Configuration_Management">
+<dir name="01_Planning"/>
+<dir name="02_Reporting"/>
+<dir name="03_Reviews"/>
+</dir>
+<dir name="04_Change_Management">
+<dir name="01_Planning"/>
+<dir name="02_Reporting">
+<dir name="Standardization_Metric"/>
+</dir>
+<dir name="03_Integration"/>
+<dir name="04_Meeting_Minutes">
+<dir name="01_Internal"/>
+<dir name="02_External"/>
+</dir>
+<dir name="05_Correspondence">
+<dir name="01_Internal"/>
+<dir name="02_External"/>
+</dir>
+<dir name="06_Presentations">
+<dir name="01_Internal"/>
+<dir name="02_External"/>
+</dir>
+</dir>
+<dir name="05_Supplier_Management">
+<dir name="01_S1">
+<dir name="01_Planning"/>
+<dir name="02_Reporting"/>
+<dir name="03_Meeting_Minutes">
+<dir name="01_Internal"/>
+<dir name="02_External"/>
+</dir>
+<dir name="04_Correspondence">
+<dir name="01_Internal"/>
+<dir name="02_External"/>
+</dir>
+<dir name="05_Delivery"/>
+<dir name="06_Audits"/>
+<dir name="07_Presentations">
+<dir name="01_Internal"/>
+<dir name="02_External"/>
+</dir>
+</dir>
+</dir>
+<dir name="06_System">
+<dir name="01_Requirements"/>
+<dir name="02_Architecture_Design"/>
+<dir name="03_Integration"/>
+</dir>
+<dir name="08_Algo"/>
+<dir name="09_Electronics">
+<dir name="01_Requirements"/>
+<dir name="02_Architecture_Design"/>
+<dir name="03_Integration">
+<dir name="02_Datasheets"/>
+</dir>
+<dir name="04_Meeting_Minutes">
+<dir name="01_Internal">
+<dir name="InRs"/>
+</dir>
+<dir name="02_External"/>
+</dir>
+<dir name="05_Correspondence">
+<dir name="01_Internal"/>
+<dir name="02_External"/>
+</dir>
+<dir name="06_Presentations">
+<dir name="01_Internal"/>
+<dir name="02_External"/>
+</dir>
+<dir name="07_Schematics"/>
+<dir name="08_Test"/>
+</dir>
+<dir name="10_Mechanics">
+<dir name="01_Requirements"/>
+<dir name="02_Architecture_Design"/>
+<dir name="03_Integration">
+<dir name="02_Datasheets"/>
+</dir>
+<dir name="04_Meeting_Minutes">
+<dir name="01_Internal"/>
+<dir name="02_External"/>
+</dir>
+<dir name="05_Correspondence">
+<dir name="01_Internal"/>
+<dir name="02_External"/>
+</dir>
+<dir name="06_Presentations">
+<dir name="01_Internal"/>
+<dir name="02_External"/>
+</dir>
+<dir name="07_Drawings"/>
+<dir name="08_Test"/>
+</dir>
+<dir name="11_Test_Ver_Val">
+<dir name="01_Requirements"/>
+<dir name="02_Planning"/>
+<dir name="03_Reporting"/>
+<dir name="04_Meeting_Minutes">
+<dir name="01_Internal"/>
+<dir name="02_External"/>
+</dir>
+<dir name="05_Correspondence">
+<dir name="01_Internal"/>
+<dir name="02_External"/>
+</dir>
+<dir name="06_Presentations">
+<dir name="01_Internal"/>
+<dir name="02_External"/>
+</dir>
+<dir name="07_Sys_Test">
+<dir name="01_ADAG_HIL">
+<dir name="01_Test_SW"/>
+<dir name="02_Test_HW"/>
+<dir name="03_Test_Cases"/>
+<dir name="04_Test_Config"/>
+</dir>
+<dir name="02_ATESY_HIL">
+<dir name="01_Test_SW"/>
+<dir name="02_Test_HW"/>
+<dir name="03_Test_Cases"/>
+<dir name="04_Test_Config"/>
+<dir name="05_Test_Results"/>
+<dir name="06_Test_Documentation">
+<dir name="01_Input"/>
+<dir name="02_Output">
+<dir name="01_InRs"/>
+<dir name="02_Meeting_Minutes"/>
+<dir name="03_Presentations"/>
+</dir>
+</dir>
+<dir name="07_Test_Planning"/>
+</dir>
+<dir name="03_Core2_(FFT)">
+<dir name="01_Test_SW"/>
+<dir name="02_Test_HW"/>
+<dir name="03_Test_Cases"/>
+<dir name="04_Test_Config"/>
+</dir>
+<dir name="04_External_HIL(BCS)">
+<dir name="01_Test_SW"/>
+<dir name="02_Test_HW"/>
+<dir name="03_Test_Cases"/>
+<dir name="04_Test_Config"/>
+</dir>
+<dir name="05_Vehicle_Testing">
+<dir name="01_Test_SW"/>
+<dir name="02_Test_HW"/>
+<dir name="03_Test_Cases"/>
+<dir name="04_Test_Config"/>
+</dir>
+<dir name="06_Manual_Test">
+<dir name="01_Test_SW"/>
+<dir name="02_Test_HW"/>
+<dir name="03_Test_Cases"/>
+<dir name="04_Test_Config"/>
+</dir>
+</dir>
+<dir name="08_Testresults">
+<dir name="01_CV"/>
+<dir name="02_DV"/>
+<dir name="03_PV"/>
+</dir>
+<dir name="09_Production_Test">
+<dir name="01_ICT">
+<dir name="01_Requirements"/>
+<dir name="02_Integration"/>
+</dir>
+<dir name="02_Burn_In">
+<dir name="01_Requirements"/>
+<dir name="02_Integration"/>
+</dir>
+<dir name="03_FFT">
+<dir name="01_Requirements"/>
+<dir name="02_Integration"/>
+</dir>
+</dir>
+</dir>
+<dir name="12_Quality_Assurance">
+<dir name="01_Planning"/>
+<dir name="02_Reporting"/>
+<dir name="03_Review"/>
+<dir name="04_Field_Returns"/>
+<dir name="05_Meeting_Minutes"/>
+<dir name="06_Metrics"/>
+</dir>
+<dir name="13_Methods_Processes"/>
+<dir name="14_Tools"/>
+<dir name="15_Functional_Safety">
+<dir name="01_Safety_Management"/>
+<dir name="02_FMEA"/>
+<dir name="10_SafetyConcept"/>
+<dir name="40_SafetyAnalyses"/>
+<dir name="50_VerificationValidation"/>
+<dir name="55_ConfirmationReviews"/>
+<dir name="80_SupportingProcesses"/>
+<dir name="99_Misc"/>
+</dir>
+<dir name="16_Manufacturing_Logistic">
+<dir name="01_Requirements"/>
+<dir name="02_Planning"/>
+<dir name="03_Reporting"/>
+<dir name="04_Meeting_Minutes">
+<dir name="01_Internal"/>
+<dir name="02_External"/>
+</dir>
+<dir name="05_Correspondence">
+<dir name="01_Internal"/>
+<dir name="02_External"/>
+</dir>
+<dir name="06_Presentations">
+<dir name="01_Internal"/>
+<dir name="02_External"/>
+</dir>
+</dir>
+<dir name="SW">
+<dir name="Documents"/>
+<dir name="uC1">
+<dir name="alg"/>
+<dir name="app"/>
+<dir name="btl"/>
+<dir name="cal"/>
+<dir name="platform"/>
+</dir>
+<dir name="uC2">
+<dir name="alg"/>
+<dir name="app"/>
+<dir name="btl"/>
+<dir name="cal"/>
+<dir name="platform"/>
+</dir>
+</dir>
+</dir>
+<Folder_Structure/>
+</Folder_Structure>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 2.8.1, 2014-04-08T20:42:48. -->
+<!-- Written by QtCreator 2.8.1, 2014-04-22T21:25:33. -->
 <qtcreator>
  <data>
   <variable>ProjectExplorer.Project.ActiveTarget</variable>
@@ -61,8 +61,8 @@
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
-      <value type="QString" key="ProjectExplorer.ProcessStep.Arguments">version.pl MKS_Folder_Structure.pro version.pro Debug</value>
-      <value type="QString" key="ProjectExplorer.ProcessStep.Command">C:/bin/perl.exe </value>
+      <value type="QString" key="ProjectExplorer.ProcessStep.Arguments">version.pl -d -pIntegrity_Folder_Structure.pro -vversion.pro -bDebug</value>
+      <value type="QString" key="ProjectExplorer.ProcessStep.Command">C:/bin/perl.exe</value>
       <value type="QString" key="ProjectExplorer.ProcessStep.WorkingDirectory">%{sourceDir}</value>
       <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Custom Process Step</value>
       <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
@@ -123,7 +123,7 @@
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
-      <value type="QString" key="ProjectExplorer.ProcessStep.Arguments">version.pl MKS_Folder_Structure.pro version.pro Release</value>
+      <value type="QString" key="ProjectExplorer.ProcessStep.Arguments">version.pl -d -pIntegrity_Folder_Structure.pro -vversion.pro -bRelease</value>
       <value type="QString" key="ProjectExplorer.ProcessStep.Command">C:/bin/perl.exe</value>
       <value type="QString" key="ProjectExplorer.ProcessStep.WorkingDirectory">%{sourceDir}</value>
       <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Custom Process Step</value>

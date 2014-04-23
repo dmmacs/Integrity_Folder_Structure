@@ -14,6 +14,10 @@
 #include <QMessageBox>
 #include <QDesktopWidget>
 #include <QKeyEvent>
+#include <QScrollBar>
+#include <QEventLoop>
+
+#include "help.h"
 
 namespace Ui {
 class MainDialog;
@@ -50,6 +54,10 @@ private slots:
     void keyPressEvent(QKeyEvent * event);
 
 
+    void on_Help_Btn_clicked();
+
+    void on_line_customer_project_editingFinished();
+
 private:
     Ui::MainDialog *ui;
     QStandardItemModel *StdModel;
@@ -57,8 +65,16 @@ private:
     QDir directory;
     bool isDirty;
 
+    Help *hlpDlg;
+
+    boolean VerifyProjectExists(QString base, QString prj);
+    QString BuildBaseCmd(void);
+
     void UpdateLog(QString Str);
     void UpdateLog(QString Str, int tabCnt);
+
+    void ClearLog();
+
     void AddText(QString Str, int tabCnt);
 
     void closeEvent(QCloseEvent *event);

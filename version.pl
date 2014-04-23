@@ -1,4 +1,10 @@
 
+#Command Line Argument data
+$debug = 0;
+$Project_File = "";
+$Version_File = "";
+$Build_Type = "";
+
 
 #Constants
 my $PRJ_PRO_INDEX = 0;
@@ -22,17 +28,19 @@ my $versionChanged = 0;
 
 $numArgs = $#ARGV + 1;
 
-if ($numArgs < 3)
-{	
-	print "usage: perl.exe version.pl <project .pro file> <version.pro> <build sub folder i.e. release>\n";
-	exit (1);
-}
+processArgs(@ARGV);
+
+#if ($numArgs < 3)
+#{	
+#	print "usage: perl.exe version.pl <project .pro file> <version.pro> <build sub folder i.e. release>\n";
+#	exit (1);
+#}
 
 my $target;
 my $outData;
 
 #Parse the project .pro file to find the target exe
-open (IN, "<$ARGV[$PRJ_PRO_INDEX]");
+open (IN, "<$Project_File");
 while(<IN>)
 {
 	chomp();
@@ -42,23 +50,34 @@ while(<IN>)
 	{
 		($target) = ($_ =~ /\s*?TARGET\s*?=\s*(.*)/);
 		s/\s*?TARGET\s*?=\s*//;
-		#print $_ . "\n";
 		$target = $target . ".exe";
-		#print $target . "\n";
-	
 	}
 }
 close(IN);
 
+if ($debug == 1)
+{
+	print "Target=" . $target . "\n";
+}
 
 #Get the Exe Version Information
-my $cmd = "cscript //nologo VersionInfo.vbs $ARGV[2]\\$target";
+my $cmd = "cscript //nologo VersionInfo.vbs $Build_Type\\$target";
+if ($debug == 1)
+{
+	print "vbs command: $cmd\n";
+}
 my $exeVersion = `$cmd`;
 chomp($exeVersion);
+if ($debug == 1)
+{
+	print "vbs output: $exeVersion\n";
+}
+
+
 ($exeMajor,$exeMinor,$exePatch,$exeBuild) = ($exeVersion =~ /([0-9]*)\.([0-9]*)\.([0-9]*)\.(.*)/);
 
 #Parse the version.pro to possibly up the version
-open (IN, "<$ARGV[$VER_PRO_INDEX]");
+open (IN, "<$Version_File");
 while (<IN>)
 {
 	chomp();
@@ -68,7 +87,7 @@ while (<IN>)
 		($major,$minor,$patch,$build) = ($buildVersion =~ /([0-9]*)\.([0-9]*)\.([0-9]*)\.(.*)/);
 		if ($buildVersion eq $exeVersion)
 		{
-			if (lc($ARGV[$BLD_TYPE_INDEX]) eq "release")
+			if (lc($Build_Type) eq "release")
 			{
 				$patch++;
 				$build = 0;
@@ -88,18 +107,74 @@ while (<IN>)
 	}
 	
 }
+
+
 close (IN);
+if ($debug == 1)
+{
+	print "Build Version: $buildVersion\n";
+	print "Version Changed: $versionChanged\n";
+	print "Output Data: \n";
+	print $outData;
 
-#print $buildVersion . "\n";
-
-#print $major . "," . $minor . "," . $patch. "," . $build . "\n";
-#print $exeMajor . "," . $exeMinor . "," . $exePatch. "," . $exeBuild . "\n";
-#print $outData . "\n";
+}
 
 if ($versionChanged == 1)
 {
-	open (OUT, ">$ARGV[$VER_PRO_INDEX]");
+	open (OUT, ">$Version_File");
 	print OUT $outData;
 	close (OUT);
 }
 exit (0);
+
+sub processArgs()
+{
+	local @ARGV = @_;
+
+	$numArgs = $#ARGV + 1;
+	#print $numArgs . "\n";
+	foreach $argnum (0 .. $#ARGV) 
+	{
+		if ($ARGV[$argnum] =~ /-d/)
+		{
+			$debug = 1;
+		}
+		elsif ($ARGV[$argnum] =~ /-p/)
+		{
+			($Project_File) = ($ARGV[$argnum] =~ /-p(.*)/);
+		}
+		elsif ($ARGV[$argnum] =~ /-v/)
+		{
+			($Version_File) = ($ARGV[$argnum] =~ /-v(.*)/);
+		}
+		elsif ($ARGV[$argnum] =~ /-b/)
+		{
+			($Build_Type) = ($ARGV[$argnum] =~ /-b(.*)/);
+		}
+
+	}
+
+	if ($debug == 1)
+	{
+		foreach $argnum (0 .. $#ARGV) 
+		{
+			print "$ARGV[$argnum]\n";
+		}
+		print "Project File: $Project_File\n";
+		print "Version File: $Version_File\n";
+		print "Build Type: $Build_Type\n";
+	}
+	
+	if ($numArgs < 3)
+	{	
+		print "usage: perl.exe version.pl <options>\n";
+		print "Options:\n";
+		print "-d\t\t\tTurn on debug output\n";
+		print "-p<filename>\t\tProject file to find the target exe\n";
+		print "-v<filename>\t\tFile to pull the current version information from>\n";
+		print "-b<Build type>\t\tSetting to release will update the patch number, Debug will update the build number by default\n";
+				
+		exit (1);
+	}
+	
+}
